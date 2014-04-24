@@ -129,6 +129,9 @@ var fluid_1_5 = fluid_1_5 || {};
         listeners: {
             "onCreate.init": "fluid.metadata.audioPanel.init"
         },
+        modelListeners: {
+            "audio": "{that}.refreshView"
+        },
         invokers: {
             getContainerForAttributes: {
                 funcName: "fluid.metadata.audioPanel.getContainerForAttributes",
