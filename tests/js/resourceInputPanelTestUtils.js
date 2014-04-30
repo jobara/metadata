@@ -99,14 +99,22 @@ https://github.com/gpii/universal/LICENSE.txt
         return generatedSequence;
     };
 
+    fluid.test.testCheck = function (that) {
+        jqUnit.assertTrue("Test that the component is passed in", that);
+    };
+
     fluid.defaults("fluid.tests.resourceInputPanelTester", {
         gradeNames: ["fluid.test.testCaseHolder", "autoInit"],
         modules: [{
             name: "Test initial resourceInput panel",
             tests: [{
-                expect: 3,
+                expect: 4,
                 name: "Init",
                 sequence: [{
+                    listener: "fluid.test.testCheck",
+                    speck: {priority: "last"},
+                    event: "{resourceInputPanelTests resourceInputPanel resourceInput}.events.afterRender"
+                }, {
                     listener: "fluid.tests.checkInitPanel",
                     spec: {priority: "last"},
                     event: "{resourceInputPanelTests resourceInputPanel}.events.onReady"
