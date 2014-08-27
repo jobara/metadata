@@ -330,6 +330,7 @@ var gpii = gpii || {};
                     that.container.append(that.dialogContainer);
                 }
                 that.events.onRenderDialogContent.fire();
+                that.events.afterButtonClicked.fire();
             }
 
         }, 1);
