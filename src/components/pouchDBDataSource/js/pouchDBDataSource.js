@@ -25,6 +25,10 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
             "onCreate.bindChange": {
                 listener: "gpii.pouchdb.dataSource.bindChange",
                 args: ["{that}.database", {since: "now"}, "{that}.events.afterChange.fire"]
+            },
+            "onCreate.registerViews": {
+                listener: "gpii.pouchdb.dataSource.registerViews",
+                args: ["{that}.options.views", "{that}.createView"]
             }
         },
         members: {
@@ -35,6 +39,7 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
                 }
             }
         },
+        views: {},
         invokers: {
             get: {
                 funcName: "gpii.pouchdb.dataSource.get",
@@ -137,6 +142,12 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
 
     gpii.pouchdb.dataSource.bindChange = function (database, options, callback) {
         database.changes(options).on("complete", callback);
+    };
+
+    gpii.pouchdb.dataSource.registerViews = function (views, createViewFunc) {
+        fluid.each(views, function (view, name) {
+            createViewFunc(name, view.map, view.reduce, view.callback);
+        });
     };
 
 })(jQuery, fluid);

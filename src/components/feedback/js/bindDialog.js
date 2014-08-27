@@ -169,7 +169,6 @@ var gpii = gpii || {};
             buttonLabel: null
         },
         styles: {
-            active: "gpii-icon-active",
             openIndicator: "gpii-icon-arrow",
             focus: "gpii-feedback-buttonFocus",
             hover: "gpii-feedback-buttonHover"
@@ -224,7 +223,6 @@ var gpii = gpii || {};
             }
         },
         model: {
-            isActive: false,    // Keep track of the active state of the button
             isDialogOpen: false,
             isTooltipOpen: false,
             isFocused: {
@@ -243,11 +241,17 @@ var gpii = gpii || {};
             "isHovered.icon": "hover"
         },
         modelListeners: {
-            "isActive": "gpii.metadata.feedback.handleActiveState({change}.value, {that}.container, {that}.options.styles.active)",
             // passing in invokers directly to ensure they are resolved at the correct time.
             "isDialogOpen": [
-                "gpii.metadata.feedback.handleDialogState({that}, {change}.value, {that}.closeDialog, {that}.bindIframeClick, {that}.unbindIframeClick)",
-                "gpii.metadata.feedback.handleIndicatorState({that}.container, {that}.model, {that}.options.styles.openIndicator)"
+                {
+                    func: "gpii.metadata.feedback.handleDialogState",
+                    args: ["{that}", "{change}.value", "{that}.closeDialog", "{that}.bindIframeClick", "{that}.unbindIframeClick"],
+                    namespace: "dialogState"
+                }, {
+                    func: "gpii.metadata.feedback.handleIndicatorState",
+                    args: ["{that}.container", "{that}.model", "{that}.options.styles.openIndicator"],
+                    namespace: "indicatorState"
+                }
             ],
             "isTooltipOpen": "gpii.metadata.feedback.handleIndicatorState({that}.container, {that}.model, {that}.options.styles.openIndicator)"
         },
@@ -282,7 +286,55 @@ var gpii = gpii || {};
         }]
     });
 
+    fluid.defaults("gpii.metadata.feedback.bindDialogToggle", {
+        gradeNames: ["gpii.metadata.feedback.bindDialog", "autoInit"],
+        styles: {
+            active: "gpii-icon-active"
+        },
+        model: {
+            isActive: false    // Keep track of the active state of the button
+        },
+        modelListeners: {
+            "isActive": "gpii.metadata.feedback.handleActiveState({change}.value, {that}.container, {that}.options.styles.active)",
+            "isDialogOpen": {
+                func: "gpii.metadata.feedback.handleDialogToggleState",
+                args: ["{that}", "{change}.value", "{that}.closeDialog", "{that}.bindIframeClick", "{that}.unbindIframeClick"],
+                namespace: "dialogState"
+            }
+        },
+        invokers: {
+            bindButton: {
+                funcName: "gpii.metadata.feedback.bindToggleButton"
+            }
+        }
+    });
+
     gpii.metadata.feedback.bindButton = function (that, event) {
+        // setTimeout() is a work-around for the issue that clicking on the button opens up
+        // the corresponding dialog that is closed immediately by fluid.globalDismissal()
+        // [see gpii.metadata.feedback.handleDialogState()]. This issue is because globalDismissal()
+        // relies on a global document click handler. Given the "bubble up" architecture of
+        // these events, it is the case that the global dismissal handler will always be notified
+        // strictly after any click handler which is used to arm it. Using setTimeout() is to
+        // ensure the previous dialog is closed by the globalDismissal() before binding the
+        // click event handler for the next button.
+        setTimeout(function () {
+            event.preventDefault();
+
+            if (that.dialog && that.model.isDialogOpen) {
+                that.closeDialog();
+            } else {
+                if (!that.dialogContainer) {
+                    that.dialogContainer = $(that.options.markup.dialog).hide();
+                    that.container.append(that.dialogContainer);
+                }
+                that.events.onRenderDialogContent.fire();
+            }
+
+        }, 1);
+    };
+
+    gpii.metadata.feedback.bindToggleButton = function (that, event) {
         // setTimeout() is a work-around for the issue that clicking on the button opens up
         // the corresponding dialog that is closed immediately by fluid.globalDismissal()
         // [see gpii.metadata.feedback.handleDialogState()]. This issue is because globalDismissal()
@@ -337,6 +389,27 @@ var gpii = gpii || {};
     };
 
     gpii.metadata.feedback.handleDialogState = function (that, isDialogOpen, closeDialogFn, bindIframeClickFn, unbindIframeClickFn) {
+        var dialog = that.dialog;
+
+        if (isDialogOpen) {
+            bindIframeClickFn();
+            fluid.globalDismissal({
+                container: that.container,
+                dialog: dialog
+            }, closeDialogFn);
+        } else {
+            // manually unbind fluid.globalDismissal; particularly for cases where the dialog is closed without a click outside the component.
+            if (dialog) {
+                fluid.globalDismissal({
+                    container: that.container,
+                    dialog: dialog
+                }, null);
+            }
+            unbindIframeClickFn();
+        }
+    };
+
+    gpii.metadata.feedback.handleDialogToggleState = function (that, isDialogOpen, closeDialogFn, bindIframeClickFn, unbindIframeClickFn) {
         var dialog = that.dialog;
 
         if (isDialogOpen) {

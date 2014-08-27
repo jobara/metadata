@@ -9,6 +9,8 @@ You may obtain a copy of the ECL 2.0 License and BSD License at
 https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
 */
 
+/* global emit */
+
 (function ($, fluid) {
     "use strict";
 
@@ -23,7 +25,8 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
         templates: {
             feedback: "%prefix/feedbackTemplate.html",
             matchConfirmation: "%prefix/matchConfirmationTemplate.html",
-            mismatchDetails: "%prefix/mismatchDetailsTemplate.html"
+            mismatchDetails: "%prefix/mismatchDetailsTemplate.html",
+            requestSummary: "%prefix/requestSummaryTemplate.html"
         }
     });
 
@@ -68,6 +71,24 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
     /*
      * feedback: The actual implementation of the feedback tool
      */
+
+    gpii.metadata.feedback.invert = function (bool) {
+        return !bool;
+    };
+
+    gpii.metadata.feedback.mapRequests =  function (doc) {
+        // Only look at votes and requests set to true
+        fluid.remove_if(doc.votes, gpii.metadata.feedback.invert);
+        fluid.remove_if(doc.requests, gpii.metadata.feedback.invert);
+
+        // Merge the objects. It's okay to override duplicates as all the values should be true.
+        $.extend(doc.votes, doc.requests);
+
+        // Emit each item. The value is set to 1 to allow for easy counting.
+        fluid.each(fluid.keys(doc.votes), function (key) {
+            emit(key, 1);
+        });
+    };
 
     fluid.defaults("gpii.metadata.feedback", {
         gradeNames: ["fluid.viewRelayComponent", "autoInit"],
@@ -142,10 +163,34 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
                     }
                 }
             },
+            bindRequestSummary: {
+                type: "gpii.metadata.feedback.bindRequestSummary",
+                container: "{feedback}.dom.requestSummaryButton",
+                createOnEvent: "onFeedbackMarkupReady",
+                options: {
+                    strings: {
+                        buttonLabel: "{feedback}.options.strings.requestLabel"
+                    },
+                    styles: {
+                        activeCss: "{feedback}.options.styles.activeCss"
+                    },
+                    renderDialogContentOptions: {
+                        resources: {
+                            template: "{templateLoader}.resources.requestSummary"
+                        }
+                    }
+                }
+            },
             dataSource: {
                 type: "gpii.pouchdb.dataSource",
                 options: {
-                    databaseName: "{feedback}.databaseName"
+                    databaseName: "{feedback}.databaseName",
+                    views: {
+                        requests: {
+                            map: gpii.metadata.feedback.mapRequests,
+                            reduce: "_count"
+                        }
+                    }
                 }
             }
         },
@@ -161,7 +206,8 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
         },
         selectors: {
             matchConfirmationButton: ".gpiic-matchConfirmation-button",
-            mismatchDetailsButton: ".gpiic-mismatchDetails-button"
+            mismatchDetailsButton: ".gpiic-mismatchDetails-button",
+            requestSummaryButton: ".gpiic-requestSummary-button"
         },
         model: {
             userData: {

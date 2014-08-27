@@ -39,7 +39,7 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
      * Attaches match confirmation panel with "bindDialog" component
      */
     fluid.defaults("gpii.metadata.feedback.bindMatchConfirmation", {
-        gradeNames: ["gpii.metadata.feedback.bindDialog", "autoInit"],
+        gradeNames: ["gpii.metadata.feedback.bindDialogToggle", "autoInit"],
         panelType: "gpii.metadata.feedback.matchConfirmation",
         renderDialogContentOptions: {
             listeners: {

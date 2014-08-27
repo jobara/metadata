@@ -17,7 +17,7 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
     fluid.registerNamespace("gpii.metadata.feedback");
 
     /*
-     * Renders mismatch details
+     * Renders match confirmation
      */
     fluid.defaults("gpii.metadata.feedback.mismatchDetails", {
         gradeNames: ["gpii.metadata.feedback.baseDialogContent", "autoInit"],
@@ -101,27 +101,28 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
             onReset: null
         },
         listeners: {
-            "afterRender.setButtonText": {
+            "onCreate.refreshView": "{that}.refreshView",
+            "onCreate.setButtonText": {
                 "this": "{that}.dom.submit",
                 method: "text",
                 args: "{that}.options.strings.submit"
             },
-            "afterRender.bindSkipHandler": {
+            "onCreate.bindSkipHandler": {
                 "this": "{that}.dom.skip",
                 method: "on",
                 args: ["click", "{that}.events.onSkip.fire"]
             },
-            "afterRender.bindSubmitHandler": {
+            "onCreate.bindSubmitHandler": {
                 "this": "{that}.dom.submit",
                 method: "on",
                 args: ["click", "{that}.events.onSubmit.fire"]
             },
-            "afterRender.bindTextareaKeyup": {
+            "onCreate.bindTextareaKeyup": {
                 "this": "{that}.dom.otherFeedback",
                 method: "on",
                 args: ["keyup", "{that}.bindTextareaKeyup"]
             },
-            "afterRender.bindCheckboxOther": {
+            "onCreate.bindCheckboxOther": {
                 "this": "{that}.dom.other",
                 method: "on",
                 args: ["click", "{that}.bindCheckboxOther"]
@@ -169,7 +170,7 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
      * Attaches mismatch details panel with "bindDialog" component
      */
     fluid.defaults("gpii.metadata.feedback.bindMismatchDetails", {
-        gradeNames: ["gpii.metadata.feedback.bindDialog", "autoInit"],
+        gradeNames: ["gpii.metadata.feedback.bindDialogToggle", "autoInit"],
         panelType: "gpii.metadata.feedback.mismatchDetails",
         renderDialogContentOptions: {
             listeners: {
