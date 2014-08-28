@@ -151,7 +151,11 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
                     args: "{that}.options.databaseName"
                 }
             },
-            dataId: "feedback"
+            _id: {
+                expander: {
+                    funcName: "fluid.allocateGuid"
+                }
+            }
         },
         components: {
             bindMatchConfirmation: {
@@ -263,13 +267,7 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
             requestSummaryButton: ".gpiic-requestSummary-button"
         },
         model: {
-            userData: {
-                _id: {
-                    expander: {
-                        funcName: "fluid.allocateGuid"
-                    }
-                }
-            },
+            userData: {},
             inTransit: {
                 opinion: ["none"]   // Possible values: like, dislike, none
             }
@@ -337,7 +335,7 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
 
     gpii.metadata.feedback.save = function (that, dataSource) {
         var model = {
-            id: that.dataId,
+            id: that._id,
             model: that.model.userData
         };
 
