@@ -104,6 +104,12 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
             tree.push({
                 ID: "request:",
                 children: [{
+                    ID: "requestIcon",
+                    decorators: [{
+                        type: "addClass",
+                        classes: fluid.get(that.options.styles, name)
+                    }]
+                }, {
                     ID: "requestName",
                     messagekey: name
                 }, {

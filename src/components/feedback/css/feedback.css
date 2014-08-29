@@ -106,8 +106,12 @@ _:-ms-fullscreen, .gpii-icon.gpii-icon-unavailable:after {
     content: "\e603";
 }
 
-.gpii-icon-audio:before {
+.gpii-icon-audioDescriptions:before {
     content: "\e604";
+}
+
+.gpii-icon-audio:before {
+    content: "\e607";
 }
 
 .gpii-icon-matchConfirmation:before {
@@ -146,6 +150,11 @@ _:-ms-fullscreen, .gpii-icon.gpii-icon-unavailable:after {
 .gpii-feedback .gpii-icon-arrow {
     margin-right: -2.21875rem;
     margin-top: -1.88rem;
+}
+
+.gpii-requestsSummary-requests,
+.gpii-requestsSummary-requests .gpii-icon:before {
+    color: #6699cc;
 }
 
 /* remove default focus styling */

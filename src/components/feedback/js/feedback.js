@@ -267,6 +267,12 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
                             audio: "Audio",
                             audioDesc: "Audio Descriptions"
                         },
+                        styles: {
+                            text: "gpii-icon gpii-icon-text",
+                            transcripts: "gpii-icon gpii-icon-transcript",
+                            audio: "gpii-icon gpii-icon-audio",
+                            audioDesc: "gpii-icon gpii-icon-audioDescriptions"
+                        },
                         resources: {
                             template: "{templateLoader}.resources.requestSummary"
                         },
