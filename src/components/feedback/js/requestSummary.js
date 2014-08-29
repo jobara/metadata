@@ -105,8 +105,7 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
                 ID: "request:",
                 children: [{
                     ID: "requestName",
-                    messagekey: name,
-                    args: [{language: "English"}]
+                    messagekey: name
                 }, {
                     ID: "requestCount",
                     value: count
@@ -137,11 +136,34 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
     fluid.defaults("gpii.metadata.feedback.bindRequestSummary", {
         gradeNames: ["gpii.metadata.feedback.bindDialog", "autoInit"],
         panelType: "gpii.metadata.feedback.requestSummary",
+        styles: {
+            badge: "gpii-metadata-badge"
+        },
+        model: {
+            numRequests: 0
+        },
         renderDialogContentOptions: {
             listeners: {
                 "afterRender.fireContentReadyEvent": "{bindRequestSummary}.events.onDialogContentReady"
             }
+        },
+        modelListeners: {
+            numRequests: {
+                func: "{that}.updateBadge",
+                args: ["{change}.value"]
+            }
+        },
+        invokers: {
+            updateBadge: {
+                funcName: "gpii.metadata.feedback.bindRequestSummary.updateBadge",
+                args: ["{that}.dom.icon", "{arguments}.0", "{that}.options.styles.badge"]
+            }
         }
     });
+
+    gpii.metadata.feedback.bindRequestSummary.updateBadge = function (elm, count, style) {
+        elm.attr("data-badge", count || "");
+        elm.toggleClass(style, !!count);
+    };
 
 })(jQuery, fluid);

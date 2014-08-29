@@ -127,6 +127,22 @@ _:-ms-fullscreen, .gpii-icon.gpii-icon-unavailable:after {
     background-color: #6699cc;
 }
 
+.gpii-icon.gpii-metadata-badge:after {
+    content: attr(data-badge);;
+    color: #fff;
+    font-size: 0.5rem;
+    border-radius: 50%;
+    padding: 0 0.2rem;
+    background-color: #CC6666;
+    font-weight: bold;
+    text-align: center;
+    opacity: 1;
+    height: 0.5rem;
+    position: relative;
+    top: -1.5rem;
+    left: -0.86rem;
+}
+
 .gpii-feedback .gpii-icon-arrow {
     margin-right: -2.21875rem;
     margin-top: -1.88rem;
