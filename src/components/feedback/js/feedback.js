@@ -129,15 +129,17 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
     };
 
     gpii.metadata.feedback.mapRequests =  function (doc) {
+        var model = doc.model || doc;
+
         // Only look at votes and requests set to true
-        fluid.remove_if(doc.votes, gpii.metadata.feedback.invert);
-        fluid.remove_if(doc.requests, gpii.metadata.feedback.invert);
+        fluid.remove_if(model.votes, gpii.metadata.feedback.invert);
+        fluid.remove_if(model.requests, gpii.metadata.feedback.invert);
 
         // Merge the objects. It's okay to override duplicates as all the values should be true.
-        $.extend(doc.votes, doc.requests);
+        var votes = $.extend({}, model.votes, model.requests);
 
         // Emit each item. The value is set to 1 to allow for easy counting.
-        fluid.each(fluid.keys(doc.votes), function (key) {
+        fluid.each(fluid.keys(votes), function (key) {
             emit(key, 1);
         });
     };
@@ -232,8 +234,41 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
                         activeCss: "{feedback}.options.styles.activeCss"
                     },
                     renderDialogContentOptions: {
+                        strings: {
+                            text: "Text",
+                            transcripts: "Transcripts: %language",
+                            audio: "Audio: %language",
+                            audioDesc: "Audio Descriptions: %language"
+                        },
                         resources: {
                             template: "{templateLoader}.resources.requestSummary"
+                        },
+                        renderOnInit: false,
+                        listeners: {
+                            "onCreate.updateRequests": {
+                                listener: "{dataSource}.get",
+                                args: [{id: "requests", query: {reduce: true, group: true}}, "{that}.updateFromPouchDB"]
+                            }
+                        },
+                        transformation: {
+                            transform: {
+                                type: "fluid.transforms.arrayToObject",
+                                inputPath: "",
+                                outputPath: "",
+                                key: "key",
+                                innerValue: [{
+                                    transform: {
+                                        type: "fluid.transforms.value",
+                                        inputPath: "value"
+                                    }
+                                }]
+                            }
+                        },
+                        invokers: {
+                            updateFromPouchDB: {
+                                funcName: "gpii.metadata.feedback.updateRequestsFromPouchDB",
+                                args: ["{arguments}.0", "{that}.options.transformation", "{that}.updateRequests"]
+                            }
                         }
                     }
                 }
@@ -344,6 +379,11 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
         dataSource.set(model, function () {
             that.events.afterSave.fire(model);
         });
+    };
+
+    gpii.metadata.feedback.updateRequestsFromPouchDB = function (model, transformation, updateFn) {
+        var result = fluid.model.transform(model, transformation);
+        updateFn(result);
     };
 
 })(jQuery, fluid);

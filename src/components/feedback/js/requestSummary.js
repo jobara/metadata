@@ -27,19 +27,21 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
         },
         selectors: {
             header: ".gpiic-requestSummary-header",
-            requests: ".gpiic-requestSummary-requests",
+            // requests: ".gpiic-requestSummary-requests",
             request: ".gpiic-requestSummary-request",
             requestIcon: ".gpiic-requestSummary-requestIcon",
             requestName: ".gpiic-requestSummary-requestName",
+            requestCount: ".gpiic-requestSummary-requestCount",
             vote: ".gpiic-requestSummary-vote"
         },
+        repeatingSelectors: ["request"],
         strings: {
             header: "Requests",
             vote: "+1"
         },
-        protoTree: {
-            header: {messagekey: "header"},
-            vote: {messagekey: "vote"}
+        produceTree: "gpii.metadata.feedback.requestSummary.produceTree",
+        rendererFnOptions: {
+            noexpand: true
         },
         events: {
             // onSkip: null,
@@ -84,16 +86,50 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
             // }
         },
         invokers: {
-            // bindTextareaKeyup: {
-            //     funcName: "gpii.metadata.feedback.mismatchDetails.bindTextareaKeyup",
-            //     args: ["{that}.dom.other", "{arguments}.0"]
-            // },
-            // bindCheckboxOther: {
-            //     funcName: "gpii.metadata.feedback.mismatchDetails.bindCheckboxOther",
-            //     args: ["{that}.dom.otherFeedback", "{arguments}.0"]
-            // }
+            updateRequests: {
+                changePath: "requests",
+                value: "{arguments}.0"
+            }
+        },
+        modelListeners: {
+            "requests": {
+                func: "{that}.refreshView"
+            }
         }
     });
+
+    gpii.metadata.feedback.requestSummary.generateRequestsTree = function (that) {
+        var tree = [];
+        fluid.each(that.model.requests, function (count, name) {
+            tree.push({
+                ID: "request:",
+                children: [{
+                    ID: "requestName",
+                    messagekey: name,
+                    args: [{language: "English"}]
+                }, {
+                    ID: "requestCount",
+                    value: count
+                }, {
+                    ID: "vote",
+                    messagekey: "vote"
+                }]
+            });
+        });
+        return tree;
+    };
+
+    gpii.metadata.feedback.requestSummary.produceTree = function (that) {
+        var tree = {
+            children: [{
+                ID: "header",
+                messagekey: "header"
+            }]
+        };
+
+        tree.children = tree.children.concat(gpii.metadata.feedback.requestSummary.generateRequestsTree(that));
+        return tree;
+    };
 
     /*
      * Attaches the request summary panel with the "bindDialog" component

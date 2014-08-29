@@ -92,10 +92,14 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
         database.post(doc).then(callback);
     };
 
-    gpii.pouchdb.dataSource.putImpl = function (database, doc, callback) {
+    gpii.pouchdb.dataSource.putImpl = function (database, doc, callback, preserveOriginal) {
         database.get(doc._id).then(function (otherDoc) {
-            doc._rev = otherDoc._rev;
-            database.put(doc).then(callback);
+            if (!preserveOriginal) {
+                doc._rev = otherDoc._rev;
+                database.put(doc).then(callback);
+            } else if (callback) {
+                callback(otherDoc);
+            }
         }, function (error) {
             if (error.status === 404) {
                 database.put(doc).then(callback);
@@ -123,7 +127,7 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
         });
     };
 
-    gpii.pouchdb.dataSource.createView = function (database, name, map, reduce, callback) {
+    gpii.pouchdb.dataSource.createView = function (database, name, map, reduce, options) {
         var designDoc = {
             _id: "_design/" + name,
             views: {}
@@ -137,7 +141,8 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
             designDoc.views[name].reduce = reduce.toString();
         }
 
-        gpii.pouchdb.dataSource.putImpl(database, designDoc, callback);
+        // views can't be updated, you must delete first and then create a new one
+        gpii.pouchdb.dataSource.putImpl(database, designDoc, options.callback, !options.forceUpdate);
     };
 
     gpii.pouchdb.dataSource.bindChange = function (database, options, callback) {
@@ -146,7 +151,7 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
 
     gpii.pouchdb.dataSource.registerViews = function (views, createViewFunc) {
         fluid.each(views, function (view, name) {
-            createViewFunc(name, view.map, view.reduce, view.callback);
+            createViewFunc(name, view.map, view.reduce, {callback: view.callback, forceUpdate: view.forceUpdate});
         });
     };
 
