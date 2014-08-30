@@ -163,6 +163,32 @@ _:-ms-fullscreen, .gpii-icon.gpii-icon-unavailable:after {
 .gpii-requestsSummary-requests .gpii-icon:before {
     color: #6699cc;
 }
+.gpii-requestSummary-count {
+    margin-top: 0.5rem;
+}
+
+.gpii-requestSummary-vote {
+    background-color: #E5E5E5;
+    color: #6699cc;
+    font-size: 0.9rem;
+    border: 2px solid transparent;
+    border-radius: 10%;
+    margin-left: 5px;
+    padding: 0;
+    cursor: pointer;
+}
+
+.gpii-requestSummary-vote:hover,
+.gpii-requestSummary-vote:focus {
+    background-color: #FFFFFF;
+    border-color: #6699cc;
+    color: #6699cc;
+}
+
+.gpii-requestSummary-vote.gpii-requestSummary-activeVote {
+    background-color: #6699cc;
+    color: #FFFFFF
+}
 
 /* remove default focus styling */
 .gpii-feedback .gpii-feedback-buttonFocus .gpii-icon:focus {
@@ -241,6 +267,11 @@ _:-ms-fullscreen, .gpii-icon.gpii-icon-unavailable:after {
 }
 
 .gpii-feedback-dialog .gpii-list-unstyled input {
+    margin: 0;
+}
+
+.gpii-feedback-dialog .gpii-requestsSummary-requests.gpii-list-unstyled {
+    padding: 0;
     margin: 0;
 }
 
