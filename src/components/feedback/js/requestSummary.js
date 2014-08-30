@@ -168,7 +168,8 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
     });
 
     gpii.metadata.feedback.bindRequestSummary.updateBadge = function (elm, count, style) {
-        elm.attr("data-badge", count || "");
+        count = fluid.isPrimitive(count) && count ? count : 0;
+        elm.attr("data-badge", count);
         elm.toggleClass(style, !!count);
     };
 
