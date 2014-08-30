@@ -147,6 +147,13 @@ _:-ms-fullscreen, .gpii-icon.gpii-icon-unavailable:after {
     left: -0.86rem;
 }
 
+.gpii-icon-arrow .gpii-icon.gpii-metadata-badge:after {
+    height: inherit;
+    top: inherit;
+    left: -3.1rem;
+    float: right;
+}
+
 .gpii-feedback .gpii-icon-arrow {
     margin-right: -2.21875rem;
     margin-top: -1.88rem;
