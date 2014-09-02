@@ -284,14 +284,14 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
                             user: {
                                 func: "{feedback}.save",
                                 excludeSource: "init"
+                            },
+                            "user.votes": {
+                                listener: "{dataSource}.get",
+                                args: [{id: "requests", query: {reduce: true, group: true}}, "{that}.updateRequestsFromPouchDB"]
                             }
                         },
                         listeners: {
                             "onCreate.updateRequests": {
-                                listener: "{dataSource}.get",
-                                args: [{id: "requests", query: {reduce: true, group: true}}, "{that}.updateRequestsFromPouchDB"]
-                            },
-                            "{feedback}.events.afterSave": {
                                 listener: "{dataSource}.get",
                                 args: [{id: "requests", query: {reduce: true, group: true}}, "{that}.updateRequestsFromPouchDB"]
                             }
