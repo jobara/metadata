@@ -139,8 +139,61 @@ var gpii = gpii || {};
         }
     });
 
+    fluid.defaults("gpii.metadata.feedback.button", {
+        gradeNames: ["fluid.viewRelayComponent", "autoInit"],
+        strings: {
+            buttonLabel: null
+        },
+        listeners: {
+            "onCreate.addAria": {
+                "this": "{that}.container",
+                method: "attr",
+                args: [{
+                    "role": "button",
+                    "aria-label": "{that}.options.strings.buttonLabel"
+                }]
+            },
+            "onCreate.bindButtonClick": {
+                "this": "{that}.container",
+                method: "click",
+                args: "{that}.bindButton"
+            },
+            "onCreate.bindKeyboard": {
+                listener: "fluid.activatable",
+                args: ["{that}.container", "{that}.bindButton"]
+            }
+        },
+        events: {
+            afterButtonClicked: null
+        },
+        invokers: {
+            bindButton: {
+                funcName: "fluid.identity" // must be overridden
+            }
+        }
+    });
+
+    fluid.defaults("gpii.metadata.feedback.toggleButton", {
+        gradeNames: ["gpii.metadata.feedback.button", "autoInit"],
+        styles: {
+            active: "gpii-icon-active"
+        },
+        model: {
+            isActive: false    // Keep track of the active state of the button
+        },
+        modelListeners: {
+            "isActive": "gpii.metadata.feedback.handleActiveState({change}.value, {that}.container, {that}.options.styles.active)"
+        }
+    });
+
+
+    gpii.metadata.feedback.handleActiveState = function (isActive, buttonDom, activeCss) {
+        buttonDom.toggleClass(activeCss, isActive);
+        buttonDom.attr("aria-pressed", isActive);
+    };
+
     fluid.defaults("gpii.metadata.feedback.bindDialog", {
-        gradeNames: ["fluid.viewRelayComponent", "gpii.metadata.feedback.trackFocus", "gpii.metadata.feedback.trackBlur", "gpii.metadata.feedback.tooltipHolder", "autoInit"],
+        gradeNames: ["fluid.viewRelayComponent", "gpii.metadata.feedback.button", "gpii.metadata.feedback.trackFocus", "gpii.metadata.feedback.trackBlur", "gpii.metadata.feedback.tooltipHolder", "autoInit"],
         components: {
             renderDialogContent: {
                 type: "fluid.rendererRelayComponent",
@@ -164,9 +217,6 @@ var gpii = gpii || {};
         },
         selectors: {
             icon: ".gpiic-icon"
-        },
-        strings: {
-            buttonLabel: null
         },
         styles: {
             openIndicator: "gpii-icon-arrow",
@@ -193,29 +243,9 @@ var gpii = gpii || {};
             onRenderDialogContent: null,
             onDialogContentReady: null,
             onBindDialogHandlers: null,
-            onDialogReady: null,
-            afterButtonClicked: null
+            onDialogReady: null
         },
         listeners: {
-            "onCreate.addAriaRole": {
-                "this": "{that}.container",
-                method: "attr",
-                args: ["role", "button"]
-            },
-            "onCreate.addAriaLabel": {
-                "this": "{that}.container",
-                method: "attr",
-                args: ["aria-label", "{that}.options.strings.buttonLabel"]
-            },
-            "onCreate.bindButtonClick": {
-                "this": "{that}.container",
-                method: "click",
-                args: "{that}.bindButton"
-            },
-            "onCreate.bindKeyboard": {
-                listener: "fluid.activatable",
-                args: ["{that}.container", "{that}.bindButton"]
-            },
             "onDialogContentReady.instantiateDialog": "{that}.instantiateDialog",
             "onDialogReady.openDialog": {
                 "this": "{that}.dialog",
@@ -288,15 +318,8 @@ var gpii = gpii || {};
     });
 
     fluid.defaults("gpii.metadata.feedback.bindDialogToggle", {
-        gradeNames: ["gpii.metadata.feedback.bindDialog", "autoInit"],
-        styles: {
-            active: "gpii-icon-active"
-        },
-        model: {
-            isActive: false    // Keep track of the active state of the button
-        },
+        gradeNames: ["gpii.metadata.feedback.bindDialog", "gpii.metadata.feedback.toggleButton", "autoInit"],
         modelListeners: {
-            "isActive": "gpii.metadata.feedback.handleActiveState({change}.value, {that}.container, {that}.options.styles.active)",
             "isDialogOpen": {
                 func: "gpii.metadata.feedback.handleDialogToggleState",
                 args: ["{that}", "{change}.value", "{that}.closeDialog", "{that}.bindIframeClick", "{that}.unbindIframeClick"],
@@ -305,7 +328,8 @@ var gpii = gpii || {};
         },
         invokers: {
             bindButton: {
-                funcName: "gpii.metadata.feedback.bindToggleButton"
+                funcName: "gpii.metadata.feedback.bindToggleButton",
+                args: ["{that}", "{arguments}.0"]
             }
         }
     });
@@ -384,11 +408,6 @@ var gpii = gpii || {};
         }
 
         that.events.onDialogReady.fire(that.dialog);
-    };
-
-    gpii.metadata.feedback.handleActiveState = function (isActive, buttonDom, activeCss) {
-        buttonDom.toggleClass(activeCss, isActive);
-        buttonDom.attr("aria-pressed", isActive);
     };
 
     gpii.metadata.feedback.handleDialogState = function (that, isDialogOpen, closeDialogFn, bindIframeClickFn, unbindIframeClickFn) {
