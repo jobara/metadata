@@ -43,48 +43,6 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
         rendererFnOptions: {
             noexpand: true
         },
-        events: {
-            // onSkip: null,
-            // onSubmit: null,
-            // onReset: null
-        },
-        listeners: {
-            // "onCreate.refreshView": "{that}.refreshView",
-            // "onCreate.setButtonText": {
-            //     "this": "{that}.dom.submit",
-            //     method: "text",
-            //     args: "{that}.options.strings.submit"
-            // },
-            // "onCreate.bindSkipHandler": {
-            //     "this": "{that}.dom.skip",
-            //     method: "on",
-            //     args: ["click", "{that}.events.onSkip.fire"]
-            // },
-            // "onCreate.bindSubmitHandler": {
-            //     "this": "{that}.dom.submit",
-            //     method: "on",
-            //     args: ["click", "{that}.events.onSubmit.fire"]
-            // },
-            // "onCreate.bindTextareaKeyup": {
-            //     "this": "{that}.dom.otherFeedback",
-            //     method: "on",
-            //     args: ["keyup", "{that}.bindTextareaKeyup"]
-            // },
-            // "onCreate.bindCheckboxOther": {
-            //     "this": "{that}.dom.other",
-            //     method: "on",
-            //     args: ["click", "{that}.bindCheckboxOther"]
-            // },
-            // "onSkip.preventDefault": {
-            //     listener: "gpii.metadata.feedback.mismatchDetails.preventDefault",
-            //     args: "{arguments}.0"
-            // },
-            // "onReset.resetModel": {
-            //     listener: "{that}.applier.change",
-            //     args: ["", "{that}.defaultModel"],
-            //     priority: "first"
-            // }
-        },
         invokers: {
             updateRequests: {
                 changePath: "requests",
@@ -98,8 +56,46 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
         }
     });
 
+    gpii.metadata.feedback.requestSummary.generateVoteDecorator = function (that, currentRequest) {
+        if (fluid.get(that.model.user.requests, currentRequest)) {
+            return {
+                type: "attrs",
+                attributes: {
+                    "disabled": "disabled"
+                }
+            };
+        } else {
+            return {
+                type: "fluid",
+                func: "gpii.metadata.feedback.toggleButton",
+                options: {
+                    styles: {
+                        active: "gpii-requestSummary-activeVote"
+                    },
+                    invokers: {
+                        bindButton: {
+                            funcName: "gpii.metadata.feedback.requestSummary.bindButton",
+                            args: ["{that}"]
+                        }
+                    },
+                    model: {
+                        isActive: fluid.get(that.model.user.votes, currentRequest)
+                    },
+                    modelListeners: {
+                        "isActive": {
+                            funcName: that.applier.change,
+                            excludeSource: "init",
+                            args: ["user.votes." + currentRequest, "{change}.value"]
+                        }
+                    }
+                }
+            };
+        }
+    };
+
     gpii.metadata.feedback.requestSummary.generateRequestsTree = function (that) {
         var tree = [];
+
         fluid.each(that.model.requests, function (count, name) {
             tree.push({
                 ID: "request:",
@@ -118,31 +114,7 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
                 }, {
                     ID: "vote",
                     messagekey: "vote",
-                    decorators: [{
-                        type: "fluid",
-                        func: "gpii.metadata.feedback.toggleButton",
-                        options: {
-                            styles: {
-                                active: "gpii-requestSummary-activeVote"
-                            },
-                            invokers: {
-                                bindButton: {
-                                    funcName: "gpii.metadata.feedback.requestSummary.bindButton",
-                                    args: ["{that}"]
-                                }
-                            },
-                            model: {
-                                isActive: fluid.get(that.model.user.votes, name)
-                            },
-                            modelListeners: {
-                                "isActive": {
-                                    funcName: that.applier.change,
-                                    excludeSource: "init",
-                                    args: ["user.votes." + name, "{change}.value"]
-                                }
-                            }
-                        }
-                    }]
+                    decorators: [gpii.metadata.feedback.requestSummary.generateVoteDecorator(that, name)]
                 }]
             });
         });

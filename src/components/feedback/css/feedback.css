@@ -187,6 +187,15 @@ _:-ms-fullscreen, .gpii-icon.gpii-icon-unavailable:after {
     color: #6699cc;
 }
 
+.gpii-requestSummary-vote:disabled,
+.gpii-requestSummary-vote:hover:disabled,
+.gpii-requestSummary-vote:focus:disabled {
+    background-color: #E5E5E5;
+    border-color: transparent;
+    color: #6699cc;
+    opacity: 0.5;
+}
+
 .gpii-requestSummary-vote.gpii-requestSummary-activeVote {
     background-color: #6699cc;
     color: #FFFFFF
