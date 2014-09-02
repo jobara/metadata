@@ -179,7 +179,9 @@ _:-ms-fullscreen, .gpii-icon.gpii-icon-unavailable:after {
 }
 
 .gpii-requestSummary-vote:hover,
-.gpii-requestSummary-vote:focus {
+.gpii-requestSummary-vote:focus,
+.gpii-requestSummary-vote.gpii-requestSummary-activeVote:hover,
+.gpii-requestSummary-vote.gpii-requestSummary-activeVote:focus {
     background-color: #FFFFFF;
     border-color: #6699cc;
     color: #6699cc;

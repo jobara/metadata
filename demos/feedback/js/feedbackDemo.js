@@ -65,7 +65,7 @@ var demo = demo || {};
         });
 
         // Feedback Tool
-        gpii.metadata.feedbackLoader(".gpiic-feedback", {
+        demo.feedback = gpii.metadata.feedbackLoader(".gpiic-feedback", {
             templatePrefix: "../../src/components/feedback/html/"
         });
     });

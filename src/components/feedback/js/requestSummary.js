@@ -117,7 +117,32 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
                     value: count
                 }, {
                     ID: "vote",
-                    messagekey: "vote"
+                    messagekey: "vote",
+                    decorators: [{
+                        type: "fluid",
+                        func: "gpii.metadata.feedback.toggleButton",
+                        options: {
+                            styles: {
+                                active: "gpii-requestSummary-activeVote"
+                            },
+                            invokers: {
+                                bindButton: {
+                                    funcName: "gpii.metadata.feedback.requestSummary.bindButton",
+                                    args: ["{that}"]
+                                }
+                            },
+                            model: {
+                                isActive: fluid.get(that.model.user.votes, name)
+                            },
+                            modelListeners: {
+                                "isActive": {
+                                    funcName: that.applier.change,
+                                    excludeSource: "init",
+                                    args: ["user.votes." + name, "{change}.value"]
+                                }
+                            }
+                        }
+                    }]
                 }]
             });
         });
@@ -134,6 +159,11 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
 
         tree.children = tree.children.concat(gpii.metadata.feedback.requestSummary.generateRequestsTree(that));
         return tree;
+    };
+
+    gpii.metadata.feedback.requestSummary.bindButton = function (that) {
+        that.applier.change("isActive", !that.model.isActive);
+        that.events.afterButtonClicked.fire();
     };
 
     /*
@@ -160,6 +190,10 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
             }
         },
         invokers: {
+            updateNumRequests: {
+                changePath: "numRequests",
+                value: "{arguments}.0"
+            },
             updateBadge: {
                 funcName: "gpii.metadata.feedback.bindRequestSummary.updateBadge",
                 args: ["{that}.dom.icon", "{arguments}.0", "{that}.options.styles.badge"]

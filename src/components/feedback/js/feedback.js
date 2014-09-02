@@ -251,13 +251,13 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
                         }
                     },
                     invokers: {
-                        updateBadgeFromPouchDB: {
+                        updateNumRequestsFromPouchDB: {
                             funcName: "gpii.metadata.feedback.updateRequestsFromPouchDB",
-                            args: ["{arguments}.0", "{that}.options.transformations.numRequests", "{that}.updateBadge"]
+                            args: ["{arguments}.0", "{that}.options.transformations.numRequests", "{that}.updateNumRequests"]
                         },
                         fetchNumRequests: {
                             func: "{dataSource}.get",
-                            args: [{id: "numRequests", query: {reduce: true}}, "{that}.updateBadgeFromPouchDB"]
+                            args: [{id: "numRequests", query: {reduce: true}}, "{that}.updateNumRequestsFromPouchDB"]
                         }
                     },
                     renderDialogContentOptions: {
@@ -277,8 +277,21 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
                             template: "{templateLoader}.resources.requestSummary"
                         },
                         renderOnInit: false,
+                        model: {
+                            user: "{feedback}.model.userData"
+                        },
+                        modelListeners: {
+                            user: {
+                                func: "{feedback}.save",
+                                excludeSource: "init"
+                            }
+                        },
                         listeners: {
                             "onCreate.updateRequests": {
+                                listener: "{dataSource}.get",
+                                args: [{id: "requests", query: {reduce: true, group: true}}, "{that}.updateRequestsFromPouchDB"]
+                            },
+                            "{feedback}.events.afterSave": {
                                 listener: "{dataSource}.get",
                                 args: [{id: "requests", query: {reduce: true, group: true}}, "{that}.updateRequestsFromPouchDB"]
                             }
