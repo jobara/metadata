@@ -179,26 +179,34 @@ _:-ms-fullscreen, .gpii-icon.gpii-icon-unavailable:after {
 }
 
 .gpii-requestSummary-vote:hover,
-.gpii-requestSummary-vote:focus,
-.gpii-requestSummary-vote.gpii-requestSummary-activeVote:hover,
-.gpii-requestSummary-vote.gpii-requestSummary-activeVote:focus {
-    background-color: #FFFFFF;
-    border-color: #6699cc;
+.gpii-requestSummary-vote:focus {
+    background-color: #E5E5E5;
     color: #6699cc;
+    outline: solid #6699cc;
+    border-radius: 0;
 }
 
 .gpii-requestSummary-vote:disabled,
 .gpii-requestSummary-vote:hover:disabled,
 .gpii-requestSummary-vote:focus:disabled {
-    background-color: #E5E5E5;
     border-color: transparent;
-    color: #6699cc;
+    border-radius: 0;
+    background-color: #6699cc;
+    color: #FFFFFF;
+    outline: none;
     opacity: 0.5;
 }
 
 .gpii-requestSummary-vote.gpii-requestSummary-activeVote {
     background-color: #6699cc;
     color: #FFFFFF
+}
+
+.gpii-requestSummary-vote.gpii-requestSummary-activeVote:hover,
+.gpii-requestSummary-vote.gpii-requestSummary-activeVote:focus {
+    border-color: #FFF;
+    border-radious: 0;
+    outline: solid #6699cc;
 }
 
 /* remove default focus styling */
@@ -433,31 +441,46 @@ _:-ms-fullscreen, .gpii-icon.gpii-icon-unavailable:after {
 }
 
 .fl-theme-bw .gpii-icon-active .gpii-icon:before,
-.fl-theme-bw .gpii-requestSummary-vote.gpii-requestSummary-activeVote {
+.fl-theme-bw .gpii-requestSummary-vote.gpii-requestSummary-activeVote,
+.fl-theme-bw .gpii-requestSummary-vote:disabled,
+.fl-theme-bw .gpii-requestSummary-vote:hover:disabled,
+.fl-theme-bw .gpii-requestSummary-vote:focus:disabled {
     color: #fff !important;
     background-color: #000 !important;
 }
 
 .fl-theme-wb .gpii-icon-active .gpii-icon:before,
-.fl-theme-wb .gpii-requestSummary-vote.gpii-requestSummary-activeVote {
+.fl-theme-wb .gpii-requestSummary-vote.gpii-requestSummary-activeVote,
+.fl-theme-wb .gpii-requestSummary-vote:disabled,
+.fl-theme-wb .gpii-requestSummary-vote:hover:disabled,
+.fl-theme-wb .gpii-requestSummary-vote:focus:disabled {
     color: #000 !important;
     background-color: #fff !important;
 }
 
 .fl-theme-by .gpii-icon-active .gpii-icon:before,
-.fl-theme-by .gpii-requestSummary-vote.gpii-requestSummary-activeVote {
+.fl-theme-by .gpii-requestSummary-vote.gpii-requestSummary-activeVote,
+.fl-theme-by .gpii-requestSummary-vote:disabled,
+.fl-theme-by .gpii-requestSummary-vote:hover:disabled,
+.fl-theme-by .gpii-requestSummary-vote:focus:disabled {
     color: #ff0 !important;
     background-color: #000 !important;
 }
 
 .fl-theme-yb .gpii-icon-active .gpii-icon:before,
-.fl-theme-yb .gpii-requestSummary-vote.gpii-requestSummary-activeVote {
+.fl-theme-yb .gpii-requestSummary-vote.gpii-requestSummary-activeVote,
+.fl-theme-yb .gpii-requestSummary-vote:disabled,
+.fl-theme-yb .gpii-requestSummary-vote:hover:disabled,
+.fl-theme-yb .gpii-requestSummary-vote:focus:disabled {
     color: #000 !important;
     background-color: #ff0 !important;
 }
 
 .fl-theme-lgdg .gpii-icon-active .gpii-icon:before,
-.fl-theme-lgdg .gpii-requestSummary-vote.gpii-requestSummary-activeVote {
+.fl-theme-lgdg .gpii-requestSummary-vote.gpii-requestSummary-activeVote,
+.fl-theme-lgdg .gpii-requestSummary-vote:disabled,
+.fl-theme-lgdg .gpii-requestSummary-vote:hover:disabled,
+.fl-theme-lgdg .gpii-requestSummary-vote:focus:disabled {
     color: #555555 !important;
     background-color: #bdbdbb !important;
 }
