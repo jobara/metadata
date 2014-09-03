@@ -21,19 +21,6 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
      */
     fluid.defaults("gpii.metadata.feedback.mismatchDetails", {
         gradeNames: ["gpii.metadata.feedback.baseDialogContent", "autoInit"],
-        members: {
-            defaultModel: {
-                notInteresting: false,
-                text: false,
-                transcripts: false,
-                audio: false,
-                audioDesc: false,
-                other: false,
-                otherFeedback: "",
-                isOtherChecked: false,
-                isFeedbackHasContent: false
-            }
-        },
         selectors: {
             header: ".gpiic-mismatchDetails-header",
             notInteresting: ".gpiic-notInteresting",
@@ -97,10 +84,6 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
             onReset: null
         },
         listeners: {
-            "afterRender.setInitModelValues": {
-                listener: "gpii.metadata.feedback.mismatchDetails.setInitModelValues",
-                args: ["{that}"]
-            },
             "afterRender.setButtonText": {
                 "this": "{that}.dom.submit",
                 method: "text",
@@ -121,47 +104,46 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
                 method: "on",
                 args: ["keyup", "{that}.bindTextareaKeyup"]
             },
-            "afterRender.bindCheckboxOther": {
-                "this": "{that}.dom.other",
-                method: "on",
-                args: ["change", "{that}.bindCheckboxOther"]
-            },
             "onSkip.preventDefault": {
                 listener: "gpii.metadata.feedback.mismatchDetails.preventDefault",
                 args: "{arguments}.0"
             },
             "onReset.resetModel": {
                 listener: "{that}.applier.change",
-                args: ["", "{that}.defaultModel"],
+                args: ["", "{that}.options.defaultModel"],
                 priority: "first"
             }
         },
-        model: {
-            expander: {
-                funcName: "fluid.copy",
-                args: ["{that}.defaultModel"]
-            }
+        defaultModel: {
+            notInteresting: false,
+            text: false,
+            transcripts: false,
+            audio: false,
+            audioDesc: false,
+            other: false,
+            otherFeedback: ""
         },
+        model: "{that}.options.defaultModel",
         modelListeners: {
-            isOtherChecked: {
+            other: {
                 listener: "gpii.metadata.feedback.handleCheckboxOtherState",
-                args: ["{change}.value", "{that}"],
-                excludeSource: "init"
+                args: ["{change}.value", "{that}"]
             },
-            isFeedbackHasContent: {
-                listener: "gpii.metadata.feedback.handleFeedbackState",
-                args: ["{change}.value", "{that}"],
-                excludeSource: "init"
+            otherFeedback: {
+                listener: "gpii.metadata.feedback.updateFeedbackContent",
+                args: ["{change}.value", "{that}"]
             }
         },
         invokers: {
             bindTextareaKeyup: {
                 funcName: "gpii.metadata.feedback.mismatchDetails.bindTextareaKeyup",
-                args: ["{arguments}.0", "{that}"]
+                args: ["{arguments}.0", "{that}"],
+                excludeSource: "init"
             },
             bindCheckboxOther: {
                 funcName: "gpii.metadata.feedback.mismatchDetails.bindCheckboxOther",
-                args: ["{arguments}.0", "{that}"]
+                args: ["{arguments}.0", "{that}"],
+                excludeSource: "init"
             }
         }
     });
@@ -170,39 +152,23 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
         evt.preventDefault();
     };
 
-    gpii.metadata.feedback.mismatchDetails.setInitModelValues = function (that) {
-        that.applier.change("isOtherChecked", that.model.other);
-        that.applier.change("isFeedbackHasContent", !!that.model.otherFeedback);
-    };
-
-    // Check the length of the value in the text area to update the model value "isFeedbackHasContent".
-    // When an input value is detectd, the corresponding checkbox, "other", should be checked.
+    // Check the length of the value in the text area. When an input value is detectd,
+    // the corresponding checkbox, "other", should be checked.
     gpii.metadata.feedback.mismatchDetails.bindTextareaKeyup = function (evt, that) {
-        that.applier.change("isFeedbackHasContent", evt.target.value.length ? true : false);
-    };
-
-    gpii.metadata.feedback.handleFeedbackState = function (isFeedbackHasContent, that) {
-        var otherFeedbackDom = that.locate("otherFeedback");
-
-        if (isFeedbackHasContent) {
-            that.applier.change("isOtherChecked", true);
-        } else {
-            otherFeedbackDom.val("");
+        if (evt.target.value.length) {
+            that.applier.change("other", true);
         }
     };
 
-    // Detect the "checked" state of the checkbox "other". When the checkbox is unchecked,
-    // the content in the "feedback" text area should be removed.
-    gpii.metadata.feedback.mismatchDetails.bindCheckboxOther = function (evt, that) {
-        that.applier.change("isOtherChecked", evt.target.checked);
+    gpii.metadata.feedback.handleCheckboxOtherState = function (other, that) {
+        if (!other) {
+            that.applier.change("otherFeedback", "");
+        }
+        that.locate("other").prop("checked", other);
     };
 
-    gpii.metadata.feedback.handleCheckboxOtherState = function (isOtherChecked, that) {
-        if (!isOtherChecked) {
-            that.applier.change("isFeedbackHasContent", false);
-        } else {
-            that.locate("other").prop("checked", true);
-        }
+    gpii.metadata.feedback.updateFeedbackContent = function (feedbackContent, that) {
+        that.locate("otherFeedback").val(feedbackContent);
     };
 
     /*
