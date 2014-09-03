@@ -78,6 +78,13 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
                             args: ["{that}"]
                         }
                     },
+                    listeners: {
+                        // override the lister to a no-op function
+                        // Since this is working on a <button>
+                        // the click binding is also triggered on space and enter keyboard events.
+                        // overriding this prevents the event from being fired twice and cancelling out the vote operation
+                        "onCreate.bindKeyboard": "fluid.identity"
+                    },
                     model: {
                         isActive: fluid.get(that.model.user.votes, currentRequest)
                     },
