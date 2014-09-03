@@ -425,11 +425,6 @@ var gpii = gpii || {};
         }
     };
 
-    gpii.metadata.feedback.handleActiveState = function (isActive, buttonDom, activeCss) {
-        buttonDom.toggleClass(activeCss, isActive);
-        buttonDom.attr("aria-pressed", isActive);
-    };
-
     gpii.metadata.feedback.handleDialogState = function (that, isDialogOpen, closeDialogFn, bindIframeClickFn, unbindIframeClickFn) {
         var dialog = that.dialog;
 
