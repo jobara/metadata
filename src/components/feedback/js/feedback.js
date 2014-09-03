@@ -17,110 +17,6 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
     fluid.registerNamespace("gpii.metadata");
 
     /*
-     * templateLoader: Define the template urls for rendering each dialog content
-     */
-
-    fluid.defaults("gpii.metadata.templateLoader", {
-        gradeNames: ["fluid.prefs.resourceLoader", "autoInit"],
-        templates: {
-            feedback: "%prefix/feedbackTemplate.html",
-            matchConfirmation: "%prefix/matchConfirmationTemplate.html",
-            mismatchDetails: "%prefix/mismatchDetailsTemplate.html",
-            requestSummary: "%prefix/requestSummaryTemplate.html"
-        }
-    });
-
-    /*
-     * feedbackLoader: The component to instantiate the feedback tool.
-     * This component has two sub-components: the feedback component that implements the
-     * feedback tool; the templateLoader that loads in all the templates, from where on,
-     * operations would be synchronous.
-     */
-
-    fluid.defaults("gpii.metadata.feedbackLoader", {
-        gradeNames: ["fluid.viewRelayComponent", "autoInit"],
-        components: {
-            feedback: {
-                type: "gpii.metadata.feedback",
-                createOnEvent: "onTemplatesLoaded",
-                container: "{feedbackLoader}.container",
-                options: {
-                    components: {
-                        bindMatchConfirmation: {
-                            options: {
-                                listeners: {
-                                    "afterButtonClicked.escalateToTopParent": {
-                                        listener: "{feedbackLoader}.events.afterMatchConfirmationButtonClicked.fire",
-                                        priority: "last"
-                                    }
-                                }
-                            }
-                        },
-                        bindMismatchDetails: {
-                            options: {
-                                listeners: {
-                                    "afterButtonClicked.escalateToTopParent": {
-                                        listener: "{feedbackLoader}.events.afterMismatchDetailsButtonClicked.fire",
-                                        priority: "last"
-                                    }
-                                },
-                                renderDialogContentOptions: {
-                                    listeners: {
-                                        "onSkip.escalateToTopParent": {
-                                            listener: "{feedbackLoader}.events.onSkipAtMismatchDetails.fire",
-                                            priority: "last"
-                                        },
-                                        "onSubmit.escalateToTopParent": {
-                                            listener: "{feedbackLoader}.events.onSubmitAtMismatchDetails.fire",
-                                            priority: "last"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    events: {
-                        onSave: "{feedbackLoader}.events.onSave",
-                        afterSave: "{feedbackLoader}.events.afterSave"
-                    },
-                    resources: {
-                        template: "{templateLoader}.resources.feedback"
-                    }
-                }
-            },
-            templateLoader: {
-                type: "gpii.metadata.templateLoader",
-                options: {
-                    events: {
-                        onResourcesLoaded: "{feedbackLoader}.events.onTemplatesLoaded"
-                    }
-                }
-            }
-        },
-        events: {
-            onTemplatesLoaded: null,
-            onSave: null,
-            afterSave: null,
-            afterMatchConfirmationButtonClicked: null,
-            afterMismatchDetailsButtonClicked: null,
-            onSkipAtMismatchDetails: null,
-            onSubmitAtMismatchDetails: null
-        },
-        distributeOptions: [{
-            source: "{that}.options.templatePrefix",
-            target: "{that > templateLoader > resourcePath}.options.value",
-            removeSource: true
-        }, {
-            source: "{that}.options.templates",
-            target: "{that > templateLoader}.options.templates",
-            removeSource: true
-        }, {
-            source: "{that}.options.feedback",
-            target: "{that > feedback}.options"
-        }]
-    });
-
-    /*
      * feedback: The actual implementation of the feedback tool
      */
 
@@ -153,7 +49,7 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
                     args: "{that}.options.databaseName"
                 }
             },
-            _id: {
+            userID: {
                 expander: {
                     funcName: "fluid.allocateGuid"
                 }
@@ -178,9 +74,10 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
                             excludeSource: "init"
                         }
                     },
-                    renderDialogContentOptions: {
-                        resources: {
-                            template: "{templateLoader}.resources.matchConfirmation"
+                    listeners: {
+                        "afterButtonClicked.escalateToParent": {
+                            listener: "{feedback}.events.afterMatchConfirmationButtonClicked.fire",
+                            priority: "last"
                         }
                     }
                 }
@@ -203,6 +100,12 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
                             excludeSource: "init"
                         }
                     },
+                    listeners: {
+                        "afterButtonClicked.escalateToParent": {
+                            listener: "{feedback}.events.afterMismatchDetailsButtonClicked.fire",
+                            priority: "last"
+                        }
+                    },
                     renderDialogContentOptions: {
                         model: {
                             notInteresting: "{feedback}.model.userData.notInteresting",
@@ -214,10 +117,15 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
                             audioDesc: "{feedback}.model.userData.requests.audioDesc"
                         },
                         listeners: {
+                            "onSkip.escalateToParent": {
+                                listener: "{feedback}.events.onSkipAtMismatchDetails.fire",
+                                priority: "last"
+                            },
+                            "onSubmit.escalateToParent": {
+                                listener: "{feedback}.events.onSubmitAtMismatchDetails.fire",
+                                priority: "last"
+                            },
                             "onSubmit.save": "{feedback}.save"
-                        },
-                        resources: {
-                            template: "{templateLoader}.resources.mismatchDetails"
                         }
                     }
                 }
@@ -363,7 +271,6 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
             source: "{that}.model.inTransit.opinion",
             target: "{that}.model",
             forward: "liveOnly",
-            backward: "never",
             singleTransform: {
                 type: "fluid.transforms.arrayToSetMembership",
                 options: {
@@ -375,6 +282,10 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
         }],
         events: {
             onFeedbackMarkupReady: null,
+            afterMatchConfirmationButtonClicked: null,
+            afterMismatchDetailsButtonClicked: null,
+            onSkipAtMismatchDetails: null,
+            onSubmitAtMismatchDetails: null,
             onSave: null,
             afterSave: null
         },
@@ -421,15 +332,15 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
     };
 
     gpii.metadata.feedback.save = function (that, dataSource) {
-        var model = {
-            id: that._id,
+        var dataToSave = {
+            id: that.userID,
             model: that.model.userData
         };
 
-        that.events.onSave.fire(model);
+        that.events.onSave.fire(dataToSave);
 
-        dataSource.set(model, function () {
-            that.events.afterSave.fire(model);
+        dataSource.set(dataToSave, function () {
+            that.events.afterSave.fire(dataToSave);
         });
     };
 

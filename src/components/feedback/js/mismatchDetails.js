@@ -29,13 +29,9 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
                 audio: false,
                 audioDesc: false,
                 other: false,
-                otherFeedback: ""
-            }
-        },
-        model: {
-            expander: {
-                funcName: "fluid.copy",
-                args: ["{that}.defaultModel"]
+                otherFeedback: "",
+                isOtherChecked: false,
+                isFeedbackHasContent: false
             }
         },
         selectors: {
@@ -101,6 +97,10 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
             onReset: null
         },
         listeners: {
+            "afterRender.setInitModelValues": {
+                listener: "gpii.metadata.feedback.mismatchDetails.setInitModelValues",
+                args: ["{that}"]
+            },
             "afterRender.setButtonText": {
                 "this": "{that}.dom.submit",
                 method: "text",
@@ -124,7 +124,7 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
             "afterRender.bindCheckboxOther": {
                 "this": "{that}.dom.other",
                 method: "on",
-                args: ["click", "{that}.bindCheckboxOther"]
+                args: ["change", "{that}.bindCheckboxOther"]
             },
             "onSkip.preventDefault": {
                 listener: "gpii.metadata.feedback.mismatchDetails.preventDefault",
@@ -136,14 +136,32 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
                 priority: "first"
             }
         },
+        model: {
+            expander: {
+                funcName: "fluid.copy",
+                args: ["{that}.defaultModel"]
+            }
+        },
+        modelListeners: {
+            isOtherChecked: {
+                listener: "gpii.metadata.feedback.handleCheckboxOtherState",
+                args: ["{change}.value", "{that}"],
+                excludeSource: "init"
+            },
+            isFeedbackHasContent: {
+                listener: "gpii.metadata.feedback.handleFeedbackState",
+                args: ["{change}.value", "{that}"],
+                excludeSource: "init"
+            }
+        },
         invokers: {
             bindTextareaKeyup: {
                 funcName: "gpii.metadata.feedback.mismatchDetails.bindTextareaKeyup",
-                args: ["{that}.dom.other", "{arguments}.0"]
+                args: ["{arguments}.0", "{that}"]
             },
             bindCheckboxOther: {
                 funcName: "gpii.metadata.feedback.mismatchDetails.bindCheckboxOther",
-                args: ["{that}.dom.otherFeedback", "{arguments}.0"]
+                args: ["{arguments}.0", "{that}"]
             }
         }
     });
@@ -152,16 +170,38 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
         evt.preventDefault();
     };
 
-    gpii.metadata.feedback.mismatchDetails.bindTextareaKeyup = function (otherDom, evt) {
-        if (evt.target.value.length) {
-            otherDom.attr("checked", "checked");
+    gpii.metadata.feedback.mismatchDetails.setInitModelValues = function (that) {
+        that.applier.change("isOtherChecked", that.model.other);
+        that.applier.change("isFeedbackHasContent", !!that.model.otherFeedback);
+    };
+
+    // Check the length of the value in the text area to update the model value "isFeedbackHasContent".
+    // When an input value is detectd, the corresponding checkbox, "other", should be checked.
+    gpii.metadata.feedback.mismatchDetails.bindTextareaKeyup = function (evt, that) {
+        that.applier.change("isFeedbackHasContent", evt.target.value.length ? true : false);
+    };
+
+    gpii.metadata.feedback.handleFeedbackState = function (isFeedbackHasContent, that) {
+        var otherFeedbackDom = that.locate("otherFeedback");
+
+        if (isFeedbackHasContent) {
+            that.applier.change("isOtherChecked", true);
+        } else {
+            otherFeedbackDom.val("");
         }
     };
 
-    gpii.metadata.feedback.mismatchDetails.bindCheckboxOther = function (otherFeedbackDom, evt) {
-        var feedbackValue = otherFeedbackDom.val();
-        if (!evt.target.checked && feedbackValue.length) {
-            otherFeedbackDom.val("");
+    // Detect the "checked" state of the checkbox "other". When the checkbox is unchecked,
+    // the content in the "feedback" text area should be removed.
+    gpii.metadata.feedback.mismatchDetails.bindCheckboxOther = function (evt, that) {
+        that.applier.change("isOtherChecked", evt.target.checked);
+    };
+
+    gpii.metadata.feedback.handleCheckboxOtherState = function (isOtherChecked, that) {
+        if (!isOtherChecked) {
+            that.applier.change("isFeedbackHasContent", false);
+        } else {
+            that.locate("other").prop("checked", true);
         }
     };
 
