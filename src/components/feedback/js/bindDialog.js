@@ -139,59 +139,6 @@ var gpii = gpii || {};
         }
     });
 
-    fluid.defaults("gpii.metadata.feedback.button", {
-        gradeNames: ["fluid.viewRelayComponent", "autoInit"],
-        strings: {
-            buttonLabel: null
-        },
-        listeners: {
-            "onCreate.addAria": {
-                "this": "{that}.container",
-                method: "attr",
-                args: [{
-                    "role": "button",
-                    "aria-label": "{that}.options.strings.buttonLabel"
-                }]
-            },
-            "onCreate.bindButtonClick": {
-                "this": "{that}.container",
-                method: "click",
-                args: "{that}.bindButton"
-            },
-            "onCreate.bindKeyboard": {
-                listener: "fluid.activatable",
-                args: ["{that}.container", "{that}.bindButton"]
-            }
-        },
-        events: {
-            afterButtonClicked: null
-        },
-        invokers: {
-            bindButton: {
-                funcName: "fluid.identity" // must be overridden
-            }
-        }
-    });
-
-    fluid.defaults("gpii.metadata.feedback.toggleButton", {
-        gradeNames: ["gpii.metadata.feedback.button", "autoInit"],
-        styles: {
-            active: "gpii-icon-active"
-        },
-        model: {
-            isActive: false    // Keep track of the active state of the button
-        },
-        modelListeners: {
-            "isActive": "gpii.metadata.feedback.handleActiveState({change}.value, {that}.container, {that}.options.styles.active)"
-        }
-    });
-
-
-    gpii.metadata.feedback.handleActiveState = function (isActive, buttonDom, activeCss) {
-        buttonDom.toggleClass(activeCss, isActive);
-        buttonDom.attr("aria-pressed", isActive);
-    };
-
     fluid.defaults("gpii.metadata.feedback.bindDialog", {
         gradeNames: ["fluid.viewRelayComponent", "gpii.metadata.feedback.button", "gpii.metadata.feedback.trackFocus", "gpii.metadata.feedback.trackBlur", "gpii.metadata.feedback.tooltipHolder", "autoInit"],
         components: {
