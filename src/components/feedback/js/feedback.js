@@ -141,24 +141,25 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
                     styles: {
                         activeCss: "{feedback}.options.styles.activeCss"
                     },
-                    listeners: {
-                        "onCreate.fetchRequests": {
-                            listener: "{that}.fetchNumRequests"
-                        },
-                        "{feedback}.events.afterSave": {
-                            listener: "{that}.fetchNumRequests"
-                        }
-                    },
-                    transformations: {
-                        numRequests: {
+                    modelRelay: [{
+                        source: "{that}.model.dataSourceValue",
+                        target: "numRequests",
+                        transform: {
                             transform: {
                                 type: "fluid.transforms.value",
                                 outputPath: "",
                                 inputPath: "0.value"
                             }
                         }
+                    }],
+                    listeners: {
+                        "onCreate.fetchRequests": "{that}.fetchNumRequests",
+                        "{feedback}.events.afterSave": "{that}.fetchNumRequests"
                     },
                     invokers: {
+                        updateNumRequests: {
+                            changePath: "dataSourceValue"
+                        },
                         fetchNumRequests: {
                             func: "{dataSource}.get",
                             args: [{id: "numRequests", query: {reduce: true}}, "{that}.updateNumRequests"]
@@ -184,23 +185,10 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
                         model: {
                             user: "{feedback}.model.userData"
                         },
-                        modelListeners: {
-                            "user.votes": [{
-                                func: "{feedback}.save",
-                                excludeSource: "init"
-                            }, {
-                                listener: "{dataSource}.get",
-                                args: [{id: "requests", query: {reduce: true, group: true}}, "{that}.updateRequests"]
-                            }]
-                        },
-                        listeners: {
-                            "onCreate.updateRequests": {
-                                listener: "{dataSource}.get",
-                                args: [{id: "requests", query: {reduce: true, group: true}}, "{that}.updateRequests"]
-                            }
-                        },
-                        transformations: {
-                            requests: {
+                        modelRelay: {
+                            source: "dataSourceValue",
+                            target: "requests",
+                            transform: {
                                 transform: {
                                     type: "fluid.transforms.arrayToObject",
                                     inputPath: "",
@@ -213,6 +201,27 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
                                         }
                                     }]
                                 }
+                            }
+                        },
+                        modelListeners: {
+                            "user.votes": [{
+                                func: "{feedback}.save",
+                                excludeSource: "init"
+                            }, {
+                                func: "{that}.fetchRequests",
+                                excludeSource: "init"
+                            }]
+                        },
+                        listeners: {
+                            "onCreate.updateRequests": "{that}.fetchRequests"
+                        },
+                        invokers: {
+                            updateRequests: {
+                                changePath: "dataSourceValue"
+                            },
+                            fetchRequests: {
+                                func: "{dataSource}.get",
+                                args: [{id: "requests", query: {reduce: true, group: true}}, "{that}.updateRequests"]
                             }
                         }
                     }

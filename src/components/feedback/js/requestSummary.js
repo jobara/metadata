@@ -44,8 +44,8 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
         },
         invokers: {
             updateRequests: {
-                funcName: "gpii.metadata.feedback.requestSummary.updateModel",
-                args: ["{that}", "{arguments}.0", "requests", "{that}.options.transformations.requests"]
+                changePath: "requests",
+                value: "{arguments}.0"
             }
         },
         modelListeners: {
@@ -169,8 +169,8 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
         },
         invokers: {
             updateNumRequests: {
-                funcName: "gpii.metadata.feedback.requestSummary.updateModel",
-                args: ["{that}", "{arguments}.0", "numRequests", "{that}.options.transformations.numRequests"]
+                changePath: "numRequests",
+                value: "{arguments}.0"
             },
             updateBadge: {
                 funcName: "gpii.metadata.feedback.bindRequestSummary.updateBadge",
@@ -183,11 +183,6 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
         count = fluid.isPrimitive(count) && count ? count : 0;
         elm.attr("data-badge", count);
         elm.toggleClass(style, !!count);
-    };
-
-    gpii.metadata.feedback.requestSummary.updateModel = function (that, value, path, transformation) {
-        var newVal = transformation ? fluid.model.transform(value, transformation) : value;
-        that.applier.change(path, newVal);
     };
 
 })(jQuery, fluid);
