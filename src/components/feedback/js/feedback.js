@@ -159,13 +159,9 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
                         }
                     },
                     invokers: {
-                        updateNumRequestsFromPouchDB: {
-                            funcName: "gpii.metadata.feedback.updateRequestsFromPouchDB",
-                            args: ["{arguments}.0", "{that}.options.transformations.numRequests", "{that}.updateNumRequests"]
-                        },
                         fetchNumRequests: {
                             func: "{dataSource}.get",
-                            args: [{id: "numRequests", query: {reduce: true}}, "{that}.updateNumRequestsFromPouchDB"]
+                            args: [{id: "numRequests", query: {reduce: true}}, "{that}.updateNumRequests"]
                         }
                     },
                     renderDialogContentOptions: {
@@ -194,13 +190,13 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
                                 excludeSource: "init"
                             }, {
                                 listener: "{dataSource}.get",
-                                args: [{id: "requests", query: {reduce: true, group: true}}, "{that}.updateRequestsFromPouchDB"]
+                                args: [{id: "requests", query: {reduce: true, group: true}}, "{that}.updateRequests"]
                             }]
                         },
                         listeners: {
                             "onCreate.updateRequests": {
                                 listener: "{dataSource}.get",
-                                args: [{id: "requests", query: {reduce: true, group: true}}, "{that}.updateRequestsFromPouchDB"]
+                                args: [{id: "requests", query: {reduce: true, group: true}}, "{that}.updateRequests"]
                             }
                         },
                         transformations: {
@@ -217,12 +213,6 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
                                         }
                                     }]
                                 }
-                            }
-                        },
-                        invokers: {
-                            updateRequestsFromPouchDB: {
-                                funcName: "gpii.metadata.feedback.updateRequestsFromPouchDB",
-                                args: ["{arguments}.0", "{that}.options.transformations.requests", "{that}.updateRequests"]
                             }
                         }
                     }
@@ -341,11 +331,6 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
         dataSource.set(dataToSave, function () {
             that.events.afterSave.fire(dataToSave);
         });
-    };
-
-    gpii.metadata.feedback.updateRequestsFromPouchDB = function (model, transformation, updateFn) {
-        var result = fluid.model.transform(model, transformation);
-        updateFn(result);
     };
 
 })(jQuery, fluid);
