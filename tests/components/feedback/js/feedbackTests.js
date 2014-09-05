@@ -13,8 +13,21 @@ https://github.com/gpii/universal/LICENSE.txt
 
     fluid.registerNamespace("gpii.tests");
 
-    var matchConfirmationTemplate = "<h2 class='gpiic-matchConfirmation-header'></h2><p class='gpiic-matchConfirmation-content'></p>";
-    var mismatchDetailsTemplate = "<h2 class=\"gpiic-mismatchDetails-header\"></h2><div>    <input type=\"checkbox\" class=\"gpiic-notInteresting\" />    <label for=\"notInteresting\" class=\"gpiic-notInteresting-label\"></label></div><div class=\"gpiic-mismatchDetails-prefs-title\"></div><ul class=\"gpii-list-unstyled\">    <li>        <input type=\"checkbox\" id=\"text\" class=\"gpiic-text\" />        <label for=\"text\" class=\"gpiic-text-label\"></label>    </li>    <li>        <input type=\"checkbox\" id=\"transcripts\" class=\"gpiic-transcripts\" />        <label for=\"transcripts\" class=\"gpiic-transcripts-label\"></label>    </li>    <li>        <input type=\"checkbox\" id=\"audio\" class=\"gpiic-audio\" />        <label for=\"audio\" class=\"gpiic-audio-label\"></label>    </li>    <li>        <input type=\"checkbox\" id=\"audioDesc\" class=\"gpiic-audioDesc\" />        <label for=\"audioDesc\" class=\"gpiic-audioDesc-label\"></label>    </li>    <li>        <input type=\"checkbox\" id=\"other\" class=\"gpiic-other\" />        <label for=\"other\" class=\"gpiic-other-label\"></label>    </li>    <li>        <textarea class=\"gpiic-other-feedback gpii-other-feedback\" row=\"5\" cols=\"50\"></textarea>    </li></ul><div class=\"gpii-mismatchDetails-buttons\">    <a href=\"#\" class=\"gpiic-mismatchDetails-skip\"></a>    <button name=\"submit\" class=\"gpiic-mismatchDetails-submit gpii-mismatchDetails-submit\"></button></div>";
+    var resources = {
+        matchConfirmation: {url: "../../../../src/components/feedback/html/matchConfirmationTemplate.html"},
+        mismatchDetails: {url: "../../../../src/components/feedback/html/mismatchDetailsTemplate.html"},
+        requestSummary: {url: "../../../../src/components/feedback/html/requestSummaryTemplate.html"}
+    };
+
+    // synchronously load in the templates.
+    fluid.each(resources, function (resource) {
+        $.ajax(resource.url, {
+            async: false,
+            success: function (data) {
+                resource.template = data;
+            }
+        });
+    });
 
     fluid.defaults("gpii.tests.feedbackTests", {
         gradeNames: ["fluid.test.testEnvironment", "autoInit"],
@@ -31,7 +44,7 @@ https://github.com/gpii/universal/LICENSE.txt
                                 renderDialogContentOptions: {
                                     resources: {
                                         template: {
-                                            resourceText: matchConfirmationTemplate
+                                            resourceText: resources.matchConfirmation.template
                                         }
                                     }
                                 }
@@ -42,7 +55,18 @@ https://github.com/gpii/universal/LICENSE.txt
                                 renderDialogContentOptions: {
                                     resources: {
                                         template: {
-                                            resourceText: mismatchDetailsTemplate
+                                            resourceText: resources.mismatchDetails.template
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        bindRequestSummary: {
+                            options: {
+                                renderDialogContentOptions: {
+                                    resources: {
+                                        template: {
+                                            resourceText: resources.requestSummary.template
                                         }
                                     }
                                 }
