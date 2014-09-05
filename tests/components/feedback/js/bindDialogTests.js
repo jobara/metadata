@@ -62,21 +62,21 @@ https://github.com/gpii/universal/LICENSE.txt
         $(elm).simulate(eventType, {keyCode: keyCode});
     };
 
-    fluid.defaults("gpii.tests.bindDialogInitTree", {
+    fluid.defaults("gpii.tests.bindDialogToggleInitTree", {
         gradeNames: ["fluid.test.testEnvironment", "autoInit"],
-        markupFixture: ".gpiic-bindDialog-testFixture",
+        markupFixture: ".gpiic-bindDialogToggle-testFixture",
         components: {
-            bindDialog: {
-                type: "gpii.metadata.feedback.bindDialog",
+            bindDialogToggle: {
+                type: "gpii.metadata.feedback.bindDialogToggle",
                 container: ".gpiic-button"
             },
-            bindDialogTester: {
-                type: "gpii.tests.bindDialogInitTester"
+            bindDialogToggleTester: {
+                type: "gpii.tests.bindDialogToggleInitTester"
             }
         }
     });
 
-    fluid.defaults("gpii.tests.bindDialogInitTester", {
+    fluid.defaults("gpii.tests.bindDialogToggleInitTester", {
         gradeNames: ["fluid.test.testCaseHolder", "autoInit"],
         modules: [{
             name: "Initialization",
@@ -85,19 +85,19 @@ https://github.com/gpii/universal/LICENSE.txt
                 name: "onCreate set values",
                 type: "test",
                 func: "gpii.tests.bindDialog.assertInit",
-                args: "{bindDialog}"
+                args: "{bindDialogToggle}"
             }, {
                 expect: 2,
                 name: "state",
                 type: "test",
                 func: "gpii.tests.bindDialog.assertActiveState",
-                args: ["{bindDialog}.model.isActive", "{bindDialog}.container", "{bindDialog}.options.styles.active"]
+                args: ["{bindDialogToggle}.model.isActive", "{bindDialogToggle}.container", "{bindDialogToggle}.options.styles.active"]
             }, {
                 expect: 1,
                 name: "tooltip created",
                 type: "test",
                 func: "jqUnit.assertTrue",
-                args: ["The tooltip component should be created", "{bindDialog}.tooltip"]
+                args: ["The tooltip component should be created", "{bindDialogToggle}.tooltip"]
             }]
         }, {
             name: "Dialog State Changes",
@@ -106,71 +106,71 @@ https://github.com/gpii/universal/LICENSE.txt
                 expect: 8,
                 sequence: [{
                     jQueryTrigger: "click",
-                    element: "{bindDialog}.container"
+                    element: "{bindDialogToggle}.container"
                 }, {
                     listenerMaker: "gpii.tests.bindDialog.makeChangeChecker",
-                    makerArgs: ["{bindDialog}", "isActive", true],
+                    makerArgs: ["{bindDialogToggle}", "isActive", true],
                     spec: {path: "isActive", priority: "last"},
-                    changeEvent: "{bindDialog}.applier.modelChanged"
+                    changeEvent: "{bindDialogToggle}.applier.modelChanged"
                 }, {
-                    func: "{bindDialog}.events.onDialogContentReady.fire"
+                    func: "{bindDialogToggle}.events.onDialogContentReady.fire"
                 }, {
                     listener: "gpii.tests.bindDialog.makeEventChecker",
                     args: ["onBindDialogHandlers"],
                     priority: "last",
-                    event: "{bindDialog}.events.onBindDialogHandlers"
+                    event: "{bindDialogToggle}.events.onBindDialogHandlers"
                 }, {
                     listener: "gpii.tests.bindDialog.onDialogReadyChecker",
-                    event: "{bindDialog}.events.onDialogReady"
+                    event: "{bindDialogToggle}.events.onDialogReady"
                 }, {
                     jQueryTrigger: "click",
                     element: "body"
                 }, {
                     listenerMaker: "gpii.tests.bindDialog.makeChangeChecker",
-                    makerArgs: ["{bindDialog}", "isDialogOpen", false],
+                    makerArgs: ["{bindDialogToggle}", "isDialogOpen", false],
                     spec: {path: "isDialogOpen", priority: "last"},
-                    changeEvent: "{bindDialog}.applier.modelChanged"
+                    changeEvent: "{bindDialogToggle}.applier.modelChanged"
                 }, {
                     jQueryTrigger: "click",
-                    element: "{bindDialog}.container"
+                    element: "{bindDialogToggle}.container"
                 }, {
                     listenerMaker: "gpii.tests.bindDialog.makeChangeChecker",
-                    makerArgs: ["{bindDialog}", "isActive", false],
+                    makerArgs: ["{bindDialogToggle}", "isActive", false],
                     spec: {path: "isActive", priority: "last"},
-                    changeEvent: "{bindDialog}.applier.modelChanged"
+                    changeEvent: "{bindDialogToggle}.applier.modelChanged"
                 }]
             }, {
                 name: "Keyboard Interaction",
                 expect: 7,
                 sequence: [{
                     func: "gpii.tests.bindDialog.simulateKeyEvent",
-                    args: ["{bindDialog}.container", "keydown", $.ui.keyCode.ENTER]
+                    args: ["{bindDialogToggle}.container", "keydown", $.ui.keyCode.ENTER]
                 }, {
                     listenerMaker: "gpii.tests.bindDialog.makeChangeChecker",
-                    makerArgs: ["{bindDialog}", "isActive", true],
+                    makerArgs: ["{bindDialogToggle}", "isActive", true],
                     spec: {path: "isActive", priority: "last"},
-                    changeEvent: "{bindDialog}.applier.modelChanged"
+                    changeEvent: "{bindDialogToggle}.applier.modelChanged"
                 }, {
-                    func: "{bindDialog}.events.onDialogContentReady.fire"
+                    func: "{bindDialogToggle}.events.onDialogContentReady.fire"
                 }, {
                     listener: "gpii.tests.bindDialog.onDialogReadyChecker",
-                    event: "{bindDialog}.events.onDialogReady"
+                    event: "{bindDialogToggle}.events.onDialogReady"
                 }, {
                     func: "gpii.tests.bindDialog.simulateKeyEvent",
-                    args: ["{bindDialog}.dialog", "keydown", $.ui.keyCode.ESCAPE]
+                    args: ["{bindDialogToggle}.dialog", "keydown", $.ui.keyCode.ESCAPE]
                 }, {
                     listenerMaker: "gpii.tests.bindDialog.makeChangeChecker",
-                    makerArgs: ["{bindDialog}", "isDialogOpen", false],
+                    makerArgs: ["{bindDialogToggle}", "isDialogOpen", false],
                     spec: {path: "isDialogOpen", priority: "last"},
-                    changeEvent: "{bindDialog}.applier.modelChanged"
+                    changeEvent: "{bindDialogToggle}.applier.modelChanged"
                 }, {
                     func: "gpii.tests.bindDialog.simulateKeyEvent",
-                    args: ["{bindDialog}.container", "keydown", $.ui.keyCode.SPACE]
+                    args: ["{bindDialogToggle}.container", "keydown", $.ui.keyCode.SPACE]
                 }, {
                     listenerMaker: "gpii.tests.bindDialog.makeChangeChecker",
-                    makerArgs: ["{bindDialog}", "isActive", false],
+                    makerArgs: ["{bindDialogToggle}", "isActive", false],
                     spec: {path: "isActive", priority: "last"},
-                    changeEvent: "{bindDialog}.applier.modelChanged"
+                    changeEvent: "{bindDialogToggle}.applier.modelChanged"
                 }]
             }]
         }, {
@@ -179,37 +179,37 @@ https://github.com/gpii/universal/LICENSE.txt
                 name: "Add/Remove Indicator",
                 expect: 4,
                 sequence: [{
-                    func: "{bindDialog}.applier.change",
+                    func: "{bindDialogToggle}.applier.change",
                     args: ["isDialogOpen", true]
                 }, {
                     listenerMaker: "gpii.tests.bindDialog.makeIndicatorChecker",
-                    makerArgs: ["{bindDialog}.container", "{bindDialog}.options.styles.openIndicator", true],
+                    makerArgs: ["{bindDialogToggle}.container", "{bindDialogToggle}.options.styles.openIndicator", true],
                     spec: {path: "isDialogOpen", priority: "last"},
-                    changeEvent: "{bindDialog}.applier.modelChanged"
+                    changeEvent: "{bindDialogToggle}.applier.modelChanged"
                 }, {
-                    func: "{bindDialog}.applier.change",
+                    func: "{bindDialogToggle}.applier.change",
                     args: ["isTooltipOpen", true]
                 }, {
                     listenerMaker: "gpii.tests.bindDialog.makeIndicatorChecker",
-                    makerArgs: ["{bindDialog}.container", "{bindDialog}.options.styles.openIndicator", true],
+                    makerArgs: ["{bindDialogToggle}.container", "{bindDialogToggle}.options.styles.openIndicator", true],
                     spec: {path: "isTooltipOpen", priority: "last"},
-                    changeEvent: "{bindDialog}.applier.modelChanged"
+                    changeEvent: "{bindDialogToggle}.applier.modelChanged"
                 }, {
-                    func: "{bindDialog}.applier.change",
+                    func: "{bindDialogToggle}.applier.change",
                     args: ["isDialogOpen", false]
                 }, {
                     listenerMaker: "gpii.tests.bindDialog.makeIndicatorChecker",
-                    makerArgs: ["{bindDialog}.container", "{bindDialog}.options.styles.openIndicator", true],
+                    makerArgs: ["{bindDialogToggle}.container", "{bindDialogToggle}.options.styles.openIndicator", true],
                     spec: {path: "isDialogOpen", priority: "last"},
-                    changeEvent: "{bindDialog}.applier.modelChanged"
+                    changeEvent: "{bindDialogToggle}.applier.modelChanged"
                 }, {
-                    func: "{bindDialog}.applier.change",
+                    func: "{bindDialogToggle}.applier.change",
                     args: ["isTooltipOpen", false]
                 }, {
                     listenerMaker: "gpii.tests.bindDialog.makeIndicatorChecker",
-                    makerArgs: ["{bindDialog}.container", "{bindDialog}.options.styles.openIndicator", false],
+                    makerArgs: ["{bindDialogToggle}.container", "{bindDialogToggle}.options.styles.openIndicator", false],
                     spec: {path: "isTooltipOpen", priority: "last"},
-                    changeEvent: "{bindDialog}.applier.modelChanged"
+                    changeEvent: "{bindDialogToggle}.applier.modelChanged"
                 }]
             }]
         }]
@@ -217,7 +217,7 @@ https://github.com/gpii/universal/LICENSE.txt
 
     $(document).ready(function () {
         fluid.test.runTests([
-            "gpii.tests.bindDialogInitTree"
+            "gpii.tests.bindDialogToggleInitTree"
         ]);
     });
 })(jQuery);
