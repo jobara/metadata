@@ -306,7 +306,7 @@ var gpii = gpii || {};
             } else {
                 that.renderDialog();
             }
-            that.events.afterButtonClicked.fire();
+            gpii.metadata.feedback.button.bindButton(that);
         });
     };
 
@@ -322,8 +322,7 @@ var gpii = gpii || {};
         // ensure the previous dialog is closed by the globalDismissal() before binding the
         // click event handler for the next button.
         fluid.invokeLater(function () {
-            that.applier.change("isActive", !that.model.isActive);
-            that.events.afterButtonClicked.fire();
+            gpii.metadata.feedback.toggleButton.bindButton(that);
         });
     };
 

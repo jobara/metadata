@@ -43,14 +43,19 @@ var gpii = gpii || {};
             }
         },
         events: {
-            afterButtonClicked: null
+            afterButtonClicked: null // must be called by the bindButton method
         },
         invokers: {
             bindButton: {
-                funcName: "fluid.identity" // must be overridden
+                funcName: "gpii.metadata.feedback.button.bindButton",
+                args: ["{that}"]
             }
         }
     });
+
+    gpii.metadata.feedback.button.bindButton = function (that) {
+        that.events.afterButtonClicked.fire(that);
+    };
 
     fluid.defaults("gpii.metadata.feedback.toggleButton", {
         gradeNames: ["gpii.metadata.feedback.button", "autoInit"],
@@ -58,13 +63,22 @@ var gpii = gpii || {};
             active: "gpii-icon-active"
         },
         model: {
-            isActive: false    // Keep track of the active state of the button
+            isActive: false // Keep track of the active state of the button, should be changed in bindButton method
         },
         modelListeners: {
             "isActive": "gpii.metadata.feedback.handleActiveState({change}.value, {that}.container, {that}.options.styles.active)"
+        },
+        invokers: {
+            bindButton: {
+                funcName: "gpii.metadata.feedback.toggleButton.bindButton"
+            }
         }
     });
 
+    gpii.metadata.feedback.toggleButton.bindButton = function (that) {
+        that.applier.change("isActive", !that.model.isActive);
+        that.events.afterButtonClicked.fire(that);
+    };
 
     gpii.metadata.feedback.handleActiveState = function (isActive, buttonDom, activeCss) {
         buttonDom.toggleClass(activeCss, isActive);
