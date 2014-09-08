@@ -193,6 +193,27 @@ https://github.com/gpii/universal/LICENSE.txt
         });
     });
 
+    var petMap = function (doc) {
+        fluid.each(doc.pets, function (names, species) {
+            emit(species, names.length);
+        });
+    };
+
+    var assertViewAdded = function (that, viewName, expectedMap, expectedReduce) {
+        that.database.get("_design/" + viewName).then(function (doc) {
+            jqUnit.assertEquals("The map function should be added", expectedMap, doc.views[viewName].map);
+            jqUnit.assertEquals("The reduce function should be added", expectedReduce, doc.views[viewName].reduce);
+            gpii.tests.cleanUp (that.options.databaseName);
+        });
+    };
+
+    var assertViewReturn = function (that, viewName, expectedValue) {
+        that.get({id: viewName, query: {reduce: true}}, function (doc) {
+            jqUnit.assertEquals("The view should return the correct value.", expectedValue, doc[0].value);
+            gpii.tests.cleanUp (that.options.databaseName);
+        });
+    };
+
     jqUnit.asyncTest("createView: view added", function () {
         var dbname = "test";
         var ds = gpii.pouchdb.dataSource({
@@ -201,18 +222,14 @@ https://github.com/gpii/universal/LICENSE.txt
 
         var viewSetup = {
             name: "testView",
-            map: function (doc) {
-                emit(doc.name, 1);
-            },
+            map: petMap,
             reduce: "_count"
         };
 
-        ds.createView(viewSetup.name, viewSetup.map, viewSetup.reduce, function () {
-            ds.database.get("_design/" + viewSetup.name).then(function (doc) {
-                jqUnit.assertEquals("The map function should be added", viewSetup.map, doc.views[viewSetup.name].map);
-                jqUnit.assertEquals("The reduce function should be added", viewSetup.reduce, doc.views[viewSetup.name].reduce);
-                gpii.tests.cleanUp (dbname);
-            });
+        ds.createView(viewSetup.name, viewSetup.map, viewSetup.reduce, {
+            callback: function () {
+                assertViewAdded(ds, viewSetup.name, viewSetup.map, viewSetup.reduce);
+            }
         });
     });
 
@@ -224,11 +241,7 @@ https://github.com/gpii/universal/LICENSE.txt
 
         var viewSetup = {
             name: "petView",
-            map: function (doc) {
-                fluid.each(doc.pets, function (names, species) {
-                    emit(species, names.length);
-                });
-            },
+            map: petMap,
             reduce: "_sum"
         };
 
@@ -240,13 +253,77 @@ https://github.com/gpii/universal/LICENSE.txt
             }
         };
 
-        ds.createView(viewSetup.name, viewSetup.map, viewSetup.reduce, function () {
-            ds.database.post(owner).then(function () {
-                ds.get({id: viewSetup.name, query: {reduce: true}}, function (doc) {
-                    jqUnit.assertEquals("Total number of pets should be calculated.", 5, doc[0].value);
-                    gpii.tests.cleanUp (dbname);
+        ds.createView(viewSetup.name, viewSetup.map, viewSetup.reduce, {
+            callback: function () {
+                ds.database.post(owner).then(function () {
+                    assertViewReturn(ds, viewSetup.name, 5);
                 });
-            });
+            }
+        });
+    });
+
+    jqUnit.asyncTest("declarative view: add", function () {
+        var dbname = "test";
+        gpii.pouchdb.dataSource({
+            databaseName: dbname,
+            views: {
+                testView: {
+                    map: petMap,
+                    reduce: "_count"
+                }
+            },
+            events: {
+                onCreateView: null
+            },
+            listeners: {
+                "onCreateView.test": {
+                    listener: function (that) {
+                        assertViewAdded(that, "testView", that.options.views.testView.map, that.options.views.testView.reduce);
+                    },
+                    args: "{that}",
+                    priority: "last"
+                }
+            },
+            invokers: {
+                createView: {
+                    funcName: "gpii.pouchdb.dataSource.createView",
+                    args: ["{that}.database", "{arguments}.0", "{arguments}.1", "{arguments}.2", {
+                        callback: "{that}.events.onCreateView.fire"
+                    }]
+                }
+            }
+        });
+    });
+
+    jqUnit.asyncTest("declarative view: assert", function () {
+        var dbname = "test";
+        var owner = {
+            pets: {
+                dog: ["Spot", "Fido"],
+                cat: ["Fluffy", "Whiskers"],
+                bird: ["Polly"]
+            }
+        };
+
+        gpii.pouchdb.dataSource({
+            databaseName: dbname,
+            views: {
+                petView: {
+                    map: petMap,
+                    reduce: "_sum"
+                }
+            },
+            listeners: {
+                "onCreate.test": {
+                    listener: function (that) {
+                        that.database.post(owner).then(function () {
+                            assertViewReturn(that, "petView", 5);
+                        });
+                    },
+                    args: "{that}",
+                    priority: "last"
+                }
+            }
         });
     });
 
