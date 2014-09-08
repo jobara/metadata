@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <title>Request summary tests</title>
+
+        <link rel="stylesheet" media="screen" href="../../../lib/infusion/lib/qunit/css/qunit.css" />
+
+        <script src="../../../../src/lib/infusion/infusion-custom.js"></script>
+        <script src="../../../lib/infusion/lib/qunit/js/qunit.js"></script>
+        <script src="../../../lib/infusion/lib/jquery-ui/js/jquery.simulate.js"></script>
+        <script src="../../../lib/infusion/test-core/jqUnit/js/jqUnit.js"></script>
+        <script src="../../../lib/infusion/test-core/jqUnit/js/jqUnit-browser.js"></script>
+        <script src="../../../lib/infusion/test-core/utils/js/IoCTestUtils.js"></script>
+        <script src="../../../shared/js/testUtils.js"></script>
+
+        <script src="../../../../src/components/feedback/js/button.js"></script>
+        <script src="../../../../src/components/feedback/js/bindDialog.js"></script>
+        <script src="../../../../src/components/feedback/js/baseDialogContent.js"></script>
+        <script src="../../../../src/components/feedback/js/requestSummary.js"></script>
+        <script src="../js/requestSummaryTests.js"></script>
+    </head>
+
+    <body id="body">
+        <h1 id="qunit-header">Request summary tests</h1>
+        <h2 id="qunit-banner"></h2>
+        <div id="qunit-testrunner-toolbar"></div>
+        <h2 id="qunit-userAgent"></h2>
+        <ol id="qunit-tests"></ol>
+
+        <!-- Test HTML -->
+        <div class="gpiic-requestSummary-testFixture">
+            <div class="gpiic-requestSummary">
+                <h2 class="gpiic-requestSummary-header"></h2>
+
+                <ul class="gpiic-requestSummary-requests gpii-requestsSummary-requests gpii-list-unstyled">
+                    <li class="gpiic-requestSummary-request fl-clearfix">
+                        <span class="fl-force-left">
+                            <span class="gpiic-requestSummary-requestIcon"></span>
+                            <span class="gpiic-requestSummary-requestName"></span>
+                        </span>
+
+                        <span class="gpii-requestSummary-count fl-force-right">
+                            <span class="gpiic-requestSummary-requestCount"></span>
+                            <button class="gpiic-requestSummary-vote gpii-requestSummary-vote"></button>
+                        </span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+    </body>
+</html>
