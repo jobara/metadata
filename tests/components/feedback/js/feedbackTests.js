@@ -38,41 +38,17 @@ https://github.com/gpii/universal/LICENSE.txt
                 createOnEvent: "{feedbackTester}.events.onTestCaseStart",
                 options: {
                     gradeNames: ["gpii.metadata.feedbackConfig"],
-                    components: {
-                        bindMatchConfirmation: {
-                            options: {
-                                renderDialogContentOptions: {
-                                    resources: {
-                                        template: {
-                                            resourceText: resources.matchConfirmation.template
-                                        }
-                                    }
-                                }
-                            }
-                        },
-                        bindMismatchDetails: {
-                            options: {
-                                renderDialogContentOptions: {
-                                    resources: {
-                                        template: {
-                                            resourceText: resources.mismatchDetails.template
-                                        }
-                                    }
-                                }
-                            }
-                        },
-                        bindRequestSummary: {
-                            options: {
-                                renderDialogContentOptions: {
-                                    resources: {
-                                        template: {
-                                            resourceText: resources.requestSummary.template
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    testResources: resources,
+                    distributeOptions: [{
+                        source: "{that}.options.testResources.matchConfirmation.template",
+                        target: "{that > bindMatchConfirmation}.options.renderDialogContentOptions.resources.template.resourceText"
+                    }, {
+                        source: "{that}.options.testResources.mismatchDetails.template",
+                        target: "{that > bindMismatchDetails}.options.renderDialogContentOptions.resources.template.resourceText"
+                    }, {
+                        source: "{that}.options.testResources.requestSummary.template",
+                        target: "{that > bindRequestSummary}.options.renderDialogContentOptions.resources.template.resourceText"
+                    }]
                 }
             },
             feedbackTester: {
