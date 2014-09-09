@@ -32,9 +32,9 @@ https://github.com/gpii/universal/LICENSE.txt
 
     gpii.tests.verifyLoader = function (feedbackLoader) {
         var resources = feedbackLoader.resources;
-        jqUnit.assertNotNull("The feedback template is loaded", resources.feedback.resourceText);
-        jqUnit.assertNotNull("The matchConfirmation template is loaded", resources.matchConfirmation.resourceText);
-        jqUnit.assertNotNull("The mismatchDetails template is loaded", resources.mismatchDetails.resourceText);
+        fluid.each(resources, function (resource, name) {
+            jqUnit.assertNotNull("The " + name + " template is loaded", resource.resourceText);
+        });
     };
 
     fluid.defaults("gpii.tests.feedbackLoaderTester", {
@@ -43,7 +43,7 @@ https://github.com/gpii/universal/LICENSE.txt
             name: "Feedback loader tests",
             tests: [{
                 name: "feedbackLoader",
-                expect: 3,
+                expect: 4,
                 sequence: [{
                     listener: "gpii.tests.verifyLoader",
                     args: ["{feedbackLoader}"],
