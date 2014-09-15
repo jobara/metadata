@@ -76,7 +76,7 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
                     },
                     listeners: {
                         "afterButtonClicked.escalateToParent": {
-                            listener: "{feedback}.events.afterMatchConfirmationButtonClicked.fire",
+                            listener: "{feedback}.events.afterMatchConfirmationButtonClicked",
                             priority: "last"
                         }
                     }
@@ -118,11 +118,11 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
                         },
                         listeners: {
                             "onSkip.escalateToParent": {
-                                listener: "{feedback}.events.onSkipAtMismatchDetails.fire",
+                                listener: "{feedback}.events.onSkipAtMismatchDetails",
                                 priority: "last"
                             },
                             "onSubmit.escalateToParent": {
-                                listener: "{feedback}.events.onSubmitAtMismatchDetails.fire",
+                                listener: "{feedback}.events.onSubmitAtMismatchDetails",
                                 priority: "last"
                             },
                             "onSubmit.save": "{feedback}.save"
@@ -146,15 +146,32 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
                         target: "numRequests",
                         transform: {
                             transform: {
-                                type: "fluid.transforms.value",
-                                outputPath: "",
-                                inputPath: "0.value"
+                                type: "fluid.transforms.condition",
+                                conditionPath: "0.value",
+                                "true": {
+                                    transform: {
+                                        type: "fluid.transforms.value",
+                                        outputPath: "",
+                                        inputPath: "0.value"
+                                    }
+                                },
+                                "false": {
+                                    transform: {
+                                        type: "fluid.transforms.value",
+                                        outputPath: "",
+                                        value: 0
+                                    }
+                                }
                             }
                         }
                     }],
                     listeners: {
                         "onCreate.fetchRequests": "{that}.fetchNumRequests",
-                        "{feedback}.events.afterSave": "{that}.fetchNumRequests"
+                        "{feedback}.events.afterSave": "{that}.fetchNumRequests",
+                        "afterButtonClicked.escalateToParent": {
+                            listener: "{feedback}.events.afterRequestSummaryButtonClicked",
+                            priority: "last"
+                        }
                     },
                     invokers: {
                         updateNumRequests: {
@@ -177,9 +194,6 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
                             transcripts: "gpii-icon gpii-icon-transcript",
                             audio: "gpii-icon gpii-icon-audio",
                             audioDesc: "gpii-icon gpii-icon-audioDescriptions"
-                        },
-                        resources: {
-                            template: "{templateLoader}.resources.requestSummary"
                         },
                         renderOnInit: false,
                         model: {
@@ -282,6 +296,7 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
             onFeedbackMarkupReady: null,
             afterMatchConfirmationButtonClicked: null,
             afterMismatchDetailsButtonClicked: null,
+            afterRequestSummaryButtonClicked: null,
             onSkipAtMismatchDetails: null,
             onSubmitAtMismatchDetails: null,
             onSave: null,
