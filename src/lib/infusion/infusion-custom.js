@@ -1,4 +1,4 @@
-/*! infusion - v2.0.0-SNAPSHOT Friday, August 22nd, 2014, 1:45:49 PM*/
+/*! infusion - v2.0.0-SNAPSHOT Tuesday, September 16th, 2014, 12:51:58 PM*/
 /*!
  * jQuery JavaScript Library v1.11.0
  * http://jquery.com/
@@ -16972,6 +16972,14 @@ var fluid = fluid || fluid_2_0;
     };
     
     fluid.global = fluid.global || window || {};
+    
+    // A standard utility to schedule the invocation of a function after the current
+    // stack returns. On browsers this defaults to setTimeout(func, 1) but in 
+    // other environments can be customised - e.g. to process.nextTick in node.js
+    // In future, this could be optimised in the browser to not dispatch into the event queue
+    fluid.invokeLater = function (func) {
+        return setTimeout(func, 1);
+    };
 
     // The following flag defeats all logging/tracing activities in the most performance-critical parts of the framework.
     // This should really be performed by a build-time step which eliminates calls to pushActivity/popActivity and fluid.log.
@@ -17919,8 +17927,8 @@ var fluid = fluid || fluid_2_0;
         return fluid_prefix + (fluid_guid++);
     };
 
-    fluid.event.identifyListener = function (listener) {
-        if (typeof(listener) !== "string" && !listener.$$fluid_guid) {
+    fluid.event.identifyListener = function (listener, soft) {
+        if (typeof(listener) !== "string" && !listener.$$fluid_guid && !soft) {
             listener.$$fluid_guid = fluid.allocateGuid();
         }
         return listener.$$fluid_guid;
@@ -17948,11 +17956,18 @@ var fluid = fluid || fluid_2_0;
     // unsupported, NON-API function
     fluid.event.sortListeners = function (listeners) {
         var togo = [];
-        fluid.each(listeners, function (listener) {
-            if (listener.length !== undefined) {
-                togo = togo.concat(listener);
+        fluid.each(listeners, function (oneNamespace) {
+            var headHard; // notify only the first listener with hard namespace - or else all if all are soft
+            for (var i = 0; i < oneNamespace.length; ++ i) {
+                var thisListener = oneNamespace[i];
+                if (!thisListener.softNamespace && !headHard) {
+                    headHard = thisListener;
+                }
+            }
+            if (headHard) {
+                togo.push(headHard);
             } else {
-                togo.push(listener);
+                togo = togo.concat(oneNamespace);
             }
         });
         return togo.sort(fluid.priorityComparator);
@@ -17992,13 +18007,15 @@ var fluid = fluid || fluid_2_0;
      * listeners, to which "events" can be fired. These events consist of an arbitrary
      * function signature. General documentation on the Fluid events system is at
      * http://wiki.fluidproject.org/display/fluid/The+Fluid+Event+System .
-     * @param {Boolean} unicast If <code>true</code>, this is a "unicast" event which may only accept
-     * a single listener.
-     * @param {Boolean} preventable If <code>true</code> the return value of each handler will
+     * @param {Object} options - A structure to configure this event firer. Supported fields:
+     *     {String} name - a name for this firer
+     *     {Boolean} preventable - If <code>true</code> the return value of each handler will
      * be checked for <code>false</code> in which case further listeners will be shortcircuited, and this
      * will be the return value of fire()
      */
-    fluid.makeEventFirer = function (unicast, preventable, name, ownerId) {
+    fluid.makeEventFirer = function (options) {
+        options = options || {};
+        var name = options.name || "<anonymous>";
         var that;
         function fireToListeners(listeners, args, wrapper) {
             if (!listeners || that.destroyed) { return; }
@@ -18013,11 +18030,8 @@ var fluid = fluid || fluid_2_0;
                 }
                 var value;
                 var ret = (wrapper ? wrapper(listener) : listener).apply(null, args);
-                if (preventable && ret === false || that.destroyed) {
+                if (options.preventable && ret === false || that.destroyed) {
                     value = false;
-                }
-                if (unicast) {
-                    value = ret;
                 }
                 if (value !== undefined) {
                     return value;
@@ -18025,7 +18039,6 @@ var fluid = fluid || fluid_2_0;
             }
         }
         var identify = fluid.event.identifyListener;
-
 
         var lazyInit = function () { // Lazy init function to economise on object references for events which are never listened to
             that.listeners = {};
@@ -18038,9 +18051,6 @@ var fluid = fluid || fluid_2_0;
                 if (!listener) {
                     return;
                 }
-                if (unicast) {
-                    namespace = "unicast";
-                }
                 if (typeof(listener) === "string") {
                     listener = {globalName: listener};
                 }
@@ -18051,22 +18061,18 @@ var fluid = fluid || fluid_2_0;
                     softNamespace: softNamespace,
                     priority: fluid.event.mapPriority(priority, that.sortedListeners.length)};
                 that.byId[id] = record;
-                if (softNamespace) {
-                    var thisListeners = (that.listeners[namespace] = fluid.makeArray(that.listeners[namespace]));
-                    thisListeners.push(record);
-                }
-                else {
-                    that.listeners[namespace] = record;
-                }
-
+                
+                var thisListeners = (that.listeners[namespace] = fluid.makeArray(that.listeners[namespace]));
+                thisListeners[softNamespace ? "push" : "unshift"] (record);
+                
                 that.sortedListeners = fluid.event.sortListeners(that.listeners);
             };
             that.addListener.apply(null, arguments);
         };
         that = {
             eventId: fluid.allocateGuid(),
-            ownerId: ownerId,
             name: name,
+            ownerId: options.ownerId,
             typeName: "fluid.event.firer",
             destroy: function () {
                 that.destroyed = true;
@@ -18077,17 +18083,16 @@ var fluid = fluid || fluid_2_0;
 
             removeListener: function (listener) {
                 if (!that.listeners) { return; }
-                var namespace, id;
+                var namespace, id, record;
                 if (typeof (listener) === "string") {
                     namespace = listener;
-                    var record = that.listeners[listener];
+                    record = that.listeners[namespace];
                     if (!record) {
                         return;
                     }
-                    listener = record.length !== undefined ? record : record.listener;
                 }
-                if (typeof(listener) === "function") {
-                    id = identify(listener);
+                else if (typeof(listener) === "function") {
+                    id = identify(listener, true);
                     if (!id) {
                         fluid.fail("Cannot remove unregistered listener function ", listener, " from event " + that.name);
                     }
@@ -18096,19 +18101,23 @@ var fluid = fluid || fluid_2_0;
                 var softNamespace = rec && rec.softNamespace;
                 namespace = namespace || (rec && rec.namespace) || id;
                 delete that.byId[id];
+                record = that.listeners[namespace];
+                if (!record) {
+                    return;
+                }
                 if (softNamespace) {
-                    fluid.remove_if(that.listeners[namespace], function (thisLis) {
+                    fluid.remove_if(record, function (thisLis) {
                         return thisLis.listener.$$fluid_guid === id;
                     });
                 } else {
+                    record.shift();
+                }
+                if (record.length === 0) {
                     delete that.listeners[namespace];
                 }
                 that.sortedListeners = fluid.event.sortListeners(that.listeners);
             },
-            // NB - this method exists currently solely for the convenience of the new,
-            // transactional changeApplier. As it exists it is hard to imagine the function
-            // being helpful to any other client. We need to get more experience on the kinds
-            // of listeners that are useful, and ultimately factor this method away.
+            // NB - this method exists only to support the old ChangeApplier. It will be removed along with it.
             fireToListeners: function (listeners, args, wrapper) {
                 return fireToListeners(listeners, args, wrapper);
             },
@@ -18118,9 +18127,6 @@ var fluid = fluid || fluid_2_0;
         };
         return that;
     };
-
-    // This name will be deprecated in Fluid 1.5 for fluid.makeEventFirer (or fluid.eventFirer)
-    fluid.event.getEventFirer = fluid.makeEventFirer;
 
     /** Fire the specified event with supplied arguments. This call is an optimisation utility
      * which handles the case where the firer has not been instantiated (presumably as a result
@@ -18195,7 +18201,11 @@ var fluid = fluid || fluid_2_0;
                 event = fluid.event.resolveEvent(that, eventKey, eventSpec);
             }
         } else {
-            event = fluid.makeEventFirer(eventSpec === "unicast", eventSpec === "preventable", fluid.event.nameEvent(that, eventKey), that.id);
+            event = fluid.makeEventFirer({
+                name: fluid.event.nameEvent(that, eventKey),
+                preventable: eventSpec === "preventable",
+                ownerId: that.id
+            });
         }
         return event;
     };
@@ -19120,7 +19130,7 @@ var fluid = fluid || fluid_2_0;
                 }
             }
             if (value) {
-                that.options[key] = fluid.makeEventFirer(null, null, key, that.id);
+                that.options[key] = fluid.makeEventFirer({name: key, ownerId: that.id});
                 fluid.event.addListenerToFirer(that.options[key], value);
             }
         });
@@ -20856,6 +20866,7 @@ var fluid_2_0 = fluid_2_0 || {};
 
     // unsupported, non-API function
     fluid.clearListeners = function (shadow) {
+        // TODO: bug here - "afterDestroy" listeners will be unregistered already unless they come from this component
         fluid.each(shadow.listeners, function (rec) {
             rec.event.removeListener(rec.listener);
         });
@@ -21130,8 +21141,13 @@ var fluid_2_0 = fluid_2_0 || {};
     fluid.makeIoCRootDestroy = function (instantiator, that) {
         return function () {
             instantiator.clearComponent(that, "", that, null, true);
-            fluid.doDestroy(that);
-            fluid.fireEvent(that, "events.afterDestroy", [that, "", null]);
+        };
+    };
+    
+    // NON-API function
+    fluid.fabricateDestroyMethod = function (that, name, instantiator, child) {
+        return function () {
+            instantiator.clearComponent(that, name, child);
         };
     };
 
@@ -21343,13 +21359,6 @@ var fluid_2_0 = fluid_2_0 || {};
         return togo;
     };
 
-    // NON-API function
-    fluid.fabricateDestroyMethod = function (that, name, instantiator, child) {
-        return function () {
-            instantiator.clearComponent(that, name, child);
-        };
-    };
-
     /** Instantiate the subcomponent with the supplied name of the supplied top-level component. Although this method
      * is published as part of the Fluid API, it should not be called by general users and may not remain stable. It is
      * currently the only mechanism provided for instantiating components whose definitions are dynamic, and will be
@@ -21447,7 +21456,7 @@ var fluid_2_0 = fluid_2_0 || {};
         fluid.each(components, function (component, name) {
             if (!component.createOnEvent) {
                 var priority = fluid.priorityForComponent(component);
-                componentSort[name] = {key: name, priority: fluid.event.mapPriority(priority, 0)};
+                componentSort[name] = [{key: name, priority: fluid.event.mapPriority(priority, 0)}];
             }
             else {
                 fluid.bindDeferredComponent(that, name, component);
@@ -21922,7 +21931,7 @@ outer:  for (var i = 0; i < exist.length; ++i) {
         // occurred - this was implemented wrongly in 1.4.
         var firer;
         if (isComposite) {
-            firer = fluid.makeEventFirer(null, null, " [composite] " + fluid.event.nameEvent(that, eventName));
+            firer = fluid.makeEventFirer({name: " [composite] " + fluid.event.nameEvent(that, eventName)});
             var dispatcher = fluid.event.dispatchListener(that, firer.fire, eventName, eventSpec, isMultiple);
             if (isMultiple) {
                 fluid.event.listenerEngine(origin, dispatcher, adder);
@@ -22963,7 +22972,7 @@ var fluid_2_0 = fluid_2_0 || {};
         };
         that.forwardApplier = fluid.makeNewChangeApplier(that.forwardHolder);
         that.forwardApplier.isRelayApplier = true; // special annotation so these can be discovered in the transaction record
-        that.invalidator = fluid.makeEventFirer(null, null, "Invalidator for model relay with applier " + that.forwardApplier.applierId);
+        that.invalidator = fluid.makeEventFirer({name: "Invalidator for model relay with applier " + that.forwardApplier.applierId});
         if (sourcePath !== null) {
             that.backwardApplier = fluid.makeNewChangeApplier(that.backwardHolder);
             that.backwardAdapter = function () {
@@ -23636,8 +23645,8 @@ var fluid_2_0 = fluid_2_0 || {};
             },
             options: options,
             modelChanged: {},
-            preCommit: fluid.makeEventFirer(null, null, "preCommit event for ChangeApplier " + applierId),
-            postCommit: fluid.makeEventFirer(null, null, "postCommit event for ChangeApplier " + applierId)
+            preCommit: fluid.makeEventFirer({name: "preCommit event for ChangeApplier " }),
+            postCommit: fluid.makeEventFirer({name: "postCommit event for ChangeApplier "})
         };
         function preFireChangeRequest(changeRequest) {
             if (!changeRequest.type) {
@@ -23911,9 +23920,9 @@ var fluid_2_0 = fluid_2_0 || {};
     fluid.makeHolderChangeApplier = function (holder, options) {
         options = fluid.model.defaultAccessorConfig(options);
         var baseEvents = {
-            guards: fluid.event.getEventFirer(false, true, "guard event"),
-            postGuards: fluid.event.getEventFirer(false, true, "postGuard event"),
-            modelChanged: fluid.event.getEventFirer(false, false, "modelChanged event")
+            guards: fluid.makeEventFirer({preventable: true, name: "guard event"}),
+            postGuards: fluid.makeEventFirer({preventable: true, name: "postGuard event"}),
+            modelChanged: fluid.makeEventFirer({name: "modelChanged event"})
         };
         var threadLocal = fluid.threadLocal(function() { return {sources: {}};});
         var that = {
@@ -26531,34 +26540,38 @@ var fluid_2_0 = fluid_2_0 || {};
     };
 
     fluid.defaults("fluid.ariaLabeller", {
+        gradeNames: ["fluid.viewComponent", "autoInit"],
         labelAttribute: "aria-label",
         liveRegionMarkup: "<div class=\"liveRegion fl-offScreen-hidden\" aria-live=\"polite\"></div>",
         liveRegionId: "fluid-ariaLabeller-liveRegion",
-        events: {
-            generateLiveElement: "unicast"
+        invokers: {
+            generateLiveElement: {
+                funcName: "fluid.ariaLabeller.generateLiveElement",
+                args: "{that}"
+            },
+            update: {
+                funcName: "fluid.ariaLabeller.update",
+                args: ["{that}", "{arguments}.0"]
+            }
         },
         listeners: {
-            generateLiveElement: "fluid.ariaLabeller.generateLiveElement"
+            onCreate: {
+                func: "{that}.update",
+                args: [null]
+            }
         }
     });
-
-    fluid.ariaLabeller = function (element, options) {
-        var that = fluid.initView("fluid.ariaLabeller", element, options);
-
-        that.update = function (newOptions) {
-            newOptions = newOptions || that.options;
-            that.container.attr(that.options.labelAttribute, newOptions.text);
-            if (newOptions.dynamicLabel) {
-                var live = fluid.jById(that.options.liveRegionId);
-                if (live.length === 0) {
-                    live = that.events.generateLiveElement.fire(that);
-                }
-                live.text(newOptions.text);
+    
+    fluid.ariaLabeller.update = function (that, newOptions) {
+        newOptions = newOptions || that.options;
+        that.container.attr(that.options.labelAttribute, newOptions.text);
+        if (newOptions.dynamicLabel) {
+            var live = fluid.jById(that.options.liveRegionId);
+            if (live.length === 0) {
+                live = that.generateLiveElement();
             }
-        };
-
-        that.update();
-        return that;
+            live.text(newOptions.text);
+        }
     };
 
     fluid.ariaLabeller.generateLiveElement = function (that) {
@@ -26755,7 +26768,7 @@ var fluid_2_0 = fluid_2_0 || {};
             fluid.fetchResources.fetchResourcesImpl(that);
         };
         fluid.each(resourceSpecs, function(resourceSpec, key) {
-            resourceSpec.recurseFirer = fluid.event.getEventFirer(null, null, "I/O completion for resource \"" + key + "\"");
+            resourceSpec.recurseFirer = fluid.makeEventFirer({name: "I/O completion for resource \"" + key + "\""});
             resourceSpec.recurseFirer.addListener(that.operate);
             if (resourceSpec.url && !resourceSpec.href) {
                 resourceSpec.href = resourceSpec.url;
@@ -26876,7 +26889,7 @@ var fluid_2_0 = fluid_2_0 || {};
         var cached = resourceCache[canon];
         if (!cached) {
             fluid.log("First request for cached resource with url " + canon);
-            cached = fluid.event.getEventFirer(null, null, "cache notifier for resource URL " + canon);
+            cached = fluid.makeEventFirer(null, null, "cache notifier for resource URL " + canon);
             cached.$$firer$$ = true;
             resourceCache[canon] = cached;
             var fetchClass = resourceSpec.fetchClass;

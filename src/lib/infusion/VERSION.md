@@ -1,8 +1,8 @@
-The version of Infusion included in this folder was created using a custom build from the infusion master branch:
+The version of Infusion included in this folder was created using a custom build from Antranig's FLUID-5506 branch:
 
-https://github.com/fluid-project/infusion/
+https://github.com/amb26/infusion
 
-commit#: d591ebe6e5f2475dffda1ffbdd12d4247de9de09
+commit#: d475bb4006f896af1c05c493ef71ac974fb5e0ca
 
 ```
     grunt custom --source=true --include="tooltip, uiOptions, tabs, overviewPanel"
