@@ -15,6 +15,73 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
 (function ($, fluid) {
     "use strict";
 
+    fluid.defaults("gpii.queuedDataSource", {
+        gradeNames: ["fluid.standardRelayComponent", "autoInit"],
+        events: {
+            requestQueued: null,
+            requestUnqueued: null
+        },
+        model: {
+            isActive: false
+        },
+        members: {
+            queue: []
+        },
+        listeners: {
+            "requestUnqueued.setIsAcive": {
+                changePath: "isActive",
+                value: false
+            },
+            "requestQueued": "{that}.start"
+        },
+        modelListeners: {
+            "isActive": "{that}.start"
+        },
+        invokers: {
+            add: {
+                funcName: "gpii.queuedDataSource.add",
+                args: ["{that}", "{arguments}.0"]
+            },
+            start: {
+                funcName: "gpii.queuedDataSource.start",
+                args: ["{that}"]
+            },
+            set: {
+                funcName: "gpii.queuedDataSource.set",
+                args: ["{that}", "{arguments}.0", "{arguments}.1"]
+            },
+            get: "{wrappedDataSource}.get",
+            "delete": "{wrappedDataSource}.delete"
+        },
+        components: {
+            wrappedDataSource: {} // requires a dataSource that implements the standard set, get, and delete methods.
+        }
+    });
+
+    gpii.queuedDataSource.add = function (that, args) {
+        that.queue.push(args);
+        that.events.requestQueued.fire(args);
+    };
+
+    gpii.queuedDataSource.start = function (that) {
+        if (!that.model.isActive && that.queue.length) {
+            var args = that.queue[0];
+            that.applier.change("isActive", true);
+
+            that.wrappedDataSource.set(args.directModel, function () {
+                that.events.requestUnqueued.fire(that.queue.shift());
+                args.callback.apply(null, arguments);
+            });
+        }
+    };
+
+    gpii.queuedDataSource.set = function (that, directModel, callback) {
+        that.add({
+            directModel: directModel,
+            callback: callback
+        });
+    };
+
     fluid.defaults("gpii.pouchdb.dataSource", {
         gradeNames: ["fluid.eventedComponent", "autoInit"],
         databaseName: "",
