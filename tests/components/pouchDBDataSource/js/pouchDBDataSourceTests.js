@@ -41,11 +41,7 @@ https://github.com/gpii/universal/LICENSE.txt
                 isActive: 0
             }
         },
-        components: {
-            wrappedDataSource: {
-                type: "gpii.tests.simple.dataSource"
-            }
-        },
+        dataSourceType: "gpii.tests.simple.dataSource",
         listeners: {
             "requestQueued": {
                 func: "{that}.record",
@@ -75,7 +71,7 @@ https://github.com/gpii/universal/LICENSE.txt
         that.fireRecord[recordName] += 1;
     };
 
-    jqUnit.asyncTest("Queued DataSource", function () {
+    gpii.tests.verifyQueuedDataSource = function (grade, cleanup) {
         var expectedFireRecord = {
             requestQueued: 3,
             requestUnqueued: 3,
@@ -83,7 +79,7 @@ https://github.com/gpii/universal/LICENSE.txt
         };
         var count = 0;
 
-        var that = gpii.tests.queuedDataSource();
+        var that = grade();
         that.set({model: 1}, function () {
             jqUnit.assertTrue("Set call 1 should be triggered in the correct order", 1, ++count);
         });
@@ -93,15 +89,19 @@ https://github.com/gpii/universal/LICENSE.txt
         that.set({model: 3}, function () {
             jqUnit.assertTrue("Set call 3 should be triggered in the correct order", 3, ++count);
             jqUnit.assertDeepEq("The event record should have been updated appropriately.", expectedFireRecord, that.fireRecord);
-            jqUnit.start();
+            cleanup();
         });
+    };
+
+    jqUnit.asyncTest("Queued DataSource", function () {
+        gpii.tests.verifyQueuedDataSource(gpii.tests.queuedDataSource, jqUnit.start);
     });
 
     gpii.tests.cleanUp = function (dbname) {
         PouchDB.destroy(dbname, jqUnit.start);
     };
 
-    jqUnit.asyncTest("PouchDB Datasource - Creation", function () {
+    jqUnit.asyncTest("PouchDB DataSource - Creation", function () {
         var dbname = "test";
         var ds = gpii.pouchdb.dataSource({
             databaseName: dbname
@@ -113,7 +113,7 @@ https://github.com/gpii/universal/LICENSE.txt
         });
     });
 
-    jqUnit.asyncTest("PouchDB Datasource - Set: create document - POST", function () {
+    jqUnit.asyncTest("PouchDB DataSource - Set: create document - POST", function () {
         var dbname = "test";
         var ds = gpii.pouchdb.dataSource({
             databaseName: dbname
@@ -131,7 +131,7 @@ https://github.com/gpii/universal/LICENSE.txt
         });
     });
 
-    jqUnit.asyncTest("PouchDB Datasource - Set: create document - PUT", function () {
+    jqUnit.asyncTest("PouchDB DataSource - Set: create document - PUT", function () {
         var dbname = "test";
         var ds = gpii.pouchdb.dataSource({
             databaseName: dbname
@@ -150,7 +150,7 @@ https://github.com/gpii/universal/LICENSE.txt
         });
     });
 
-    jqUnit.asyncTest("PouchDB Datasource - Set: update document", function () {
+    jqUnit.asyncTest("PouchDB DataSource - Set: update document", function () {
         var dbname = "test";
         var ds = gpii.pouchdb.dataSource({
             databaseName: dbname
@@ -174,7 +174,7 @@ https://github.com/gpii/universal/LICENSE.txt
         });
     });
 
-    jqUnit.asyncTest("PouchDB Datasource - Get", function () {
+    jqUnit.asyncTest("PouchDB DataSource - Get", function () {
         var dbname = "test";
         var ds = gpii.pouchdb.dataSource({
             databaseName: dbname
@@ -196,7 +196,7 @@ https://github.com/gpii/universal/LICENSE.txt
         });
     });
 
-    jqUnit.asyncTest("PouchDB Datasource - Get: query view", function () {
+    jqUnit.asyncTest("PouchDB DataSource - Get: query view", function () {
         var dbname = "test";
         var ds = gpii.pouchdb.dataSource({
             databaseName: dbname
@@ -224,7 +224,7 @@ https://github.com/gpii/universal/LICENSE.txt
         });
     });
 
-    jqUnit.asyncTest("PouchDB Datasource - Delete", function () {
+    jqUnit.asyncTest("PouchDB DataSource - Delete", function () {
         var dbname = "test";
         var ds = gpii.pouchdb.dataSource({
             databaseName: dbname
@@ -248,7 +248,7 @@ https://github.com/gpii/universal/LICENSE.txt
         });
     });
 
-    jqUnit.asyncTest("PouchDB Datasource - afterChange event", function () {
+    jqUnit.asyncTest("PouchDB DataSource - afterChange event", function () {
         var dbname = "test";
         var ds = gpii.pouchdb.dataSource({
             databaseName: dbname,
@@ -275,7 +275,7 @@ https://github.com/gpii/universal/LICENSE.txt
         });
     });
 
-    jqUnit.asyncTest("PouchDB Datasource - createView: view added", function () {
+    jqUnit.asyncTest("PouchDB DataSource - createView: view added", function () {
         var dbname = "test";
         var ds = gpii.pouchdb.dataSource({
             databaseName: dbname
@@ -298,7 +298,7 @@ https://github.com/gpii/universal/LICENSE.txt
         });
     });
 
-    jqUnit.asyncTest("PouchDB Datasource - createView: assert view", function () {
+    jqUnit.asyncTest("PouchDB DataSource - createView: assert view", function () {
         var dbname = "test";
         var ds = gpii.pouchdb.dataSource({
             databaseName: dbname
@@ -329,6 +329,20 @@ https://github.com/gpii/universal/LICENSE.txt
                     gpii.tests.cleanUp (dbname);
                 });
             });
+        });
+    });
+
+    fluid.defaults("gpii.tests.pouchdb.queuedDataSource", {
+        gradeNames: ["gpii.pouchdb.queuedDataSource", "gpii.tests.queuedDataSource", "autoInit"],
+        dataSourceOptions: {
+            databaseName: "queuedTest"
+        }
+
+    });
+
+    jqUnit.asyncTest("Queued PouchDB DataSource", function () {
+        gpii.tests.verifyQueuedDataSource(gpii.tests.pouchdb.queuedDataSource, function () {
+            gpii.tests.cleanUp("queuedTest");
         });
     });
 

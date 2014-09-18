@@ -55,7 +55,16 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
         },
         components: {
             wrappedDataSource: {} // requires a dataSource that implements the standard set, get, and delete methods.
-        }
+        },
+        dataSourceType: "",
+        dataSourceOptions: {},
+        distributeOptions: [{
+            source: "{that}.options.dataSourceType",
+            target: "{that}.options.components.wrappedDataSource.type"
+        }, {
+            source: "{that}.options.dataSourceOptions",
+            target: "{that}.options.components.wrappedDataSource.options"
+        }]
     });
 
     gpii.queuedDataSource.add = function (that, args) {
@@ -205,5 +214,13 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
     gpii.pouchdb.dataSource.bindChange = function (database, options, callback) {
         database.changes(options).on("complete", callback);
     };
+
+    fluid.defaults("gpii.pouchdb.queuedDataSource", {
+        gradeNames: ["gpii.queuedDataSource", "autoInit"],
+        dataSourceType: "gpii.pouchdb.dataSource",
+        invokers: {
+            createView: "{wrapwrappedDataSourceped}.createView"
+        }
+    });
 
 })(jQuery, fluid);
