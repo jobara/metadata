@@ -218,6 +218,14 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
     fluid.defaults("gpii.pouchdb.queuedDataSource", {
         gradeNames: ["gpii.queuedDataSource", "autoInit"],
         dataSourceType: "gpii.pouchdb.dataSource",
+        dataSourceOptions: {
+            listeners: {
+                afterChange: "{queuedDataSource}.events.afterChange"
+            }
+        },
+        events: {
+            afterChange: null
+        },
         invokers: {
             createView: "{wrapwrappedDataSourceped}.createView"
         }

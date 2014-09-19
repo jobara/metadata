@@ -109,9 +109,11 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
                 }
             },
             dataSource: {
-                type: "gpii.pouchdb.dataSource",
+                type: "gpii.pouchdb.queuedDataSource",
                 options: {
-                    databaseName: "{feedback}.databaseName"
+                    dataSourceOptions: {
+                        databaseName: "{feedback}.databaseName"
+                    }
                 }
             }
         },
@@ -193,10 +195,11 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
             if (partner.model.isActive) {
                 partner.applier.change("isActive", false);
             }
+            feedback.save();
         } else if (!partner.model.isActive) {
             feedback.applier.change("inTransit.opinion.0", "none");
+            feedback.save();
         }
-        feedback.save();
     };
 
     gpii.metadata.feedback.save = function (that, dataSource) {
