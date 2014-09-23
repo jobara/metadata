@@ -45,11 +45,17 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
                     styles: {
                         activeCss: "{feedback}.options.styles.activeCss"
                     },
-                    modelListeners: {
-                        "isActive": {
-                            listener: "gpii.metadata.feedback.updateFeedbackModel",
-                            args: ["{change}.value", "like", "{bindMismatchDetails}", "{feedback}"],
-                            excludeSource: "init"
+                    modelRelay: {
+                        source: "{feedback}.model.inTransit",
+                        target: "{that}.model.isActive",
+                        transform: {
+                            transform: {
+                                type: "fluid.transforms.arrayToSetMembership",
+                                inputPath: "opinion",
+                                options: {
+                                    "like": ""
+                                }
+                            }
                         }
                     },
                     listeners: {
@@ -71,11 +77,17 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
                     styles: {
                         activeCss: "{feedback}.options.styles.activeCss"
                     },
-                    modelListeners: {
-                        "isActive": {
-                            listener: "gpii.metadata.feedback.updateFeedbackModel",
-                            args: ["{change}.value", "dislike", "{bindMatchConfirmation}", "{feedback}"],
-                            excludeSource: "init"
+                    modelRelay: {
+                        source: "{feedback}.model.inTransit",
+                        target: "{that}.model.isActive",
+                        transform: {
+                            transform: {
+                                type: "fluid.transforms.arrayToSetMembership",
+                                inputPath: "opinion",
+                                options: {
+                                    "dislike": ""
+                                }
+                            }
                         }
                     },
                     listeners: {
@@ -134,7 +146,7 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
         model: {
             userData: {},
             inTransit: {
-                opinion: ["none"]   // Possible values: like, dislike, none
+                opinion: []   // Possible values: like, dislike
             }
         },
         modelRelay: [{
@@ -144,12 +156,17 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
             singleTransform: {
                 type: "fluid.transforms.arrayToSetMembership",
                 options: {
-                    "like": "userData.match",
-                    "dislike": "userData.mismatch",
-                    "none": "inTransit.none"
+                    "like": "userData.opinion.match",
+                    "dislike": "userData.opinion.mismatch"
                 }
             }
         }],
+        modelListeners: {
+            "userData.opinion": {
+                listener: "{that}.save",
+                excludeSource: ["init"]
+            }
+        },
         events: {
             onFeedbackMarkupReady: null,
             afterMatchConfirmationButtonClicked: null,

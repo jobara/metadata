@@ -138,8 +138,8 @@ https://github.com/gpii/universal/LICENSE.txt
                 }, {
                     listener: "gpii.tests.checkSavedModel",
                     args: ["{arguments}.0", {
-                        match: true,
-                        mismatch: false
+                        "opinion.match": true,
+                        "opinion.mismatch": false
                     }],
                     priority: "last",
                     event: "{feedback}.events.afterSave"
@@ -149,8 +149,8 @@ https://github.com/gpii/universal/LICENSE.txt
                 }, {
                     listener: "gpii.tests.checkSavedModel",
                     args: ["{arguments}.0", {
-                        match: false,
-                        mismatch: false
+                        "opinion.match": false,
+                        "opinion.mismatch": false
                     }],
                     priority: "last",
                     event: "{feedback}.events.afterSave"
@@ -169,8 +169,8 @@ https://github.com/gpii/universal/LICENSE.txt
                 }, {
                     listener: "gpii.tests.checkSavedModel",
                     args: ["{arguments}.0", {
-                        match: false,
-                        mismatch: true
+                        "opinion.match": false,
+                        "opinion.mismatch": true
                     }],
                     priority: "last",
                     event: "{feedback}.events.afterSave"
@@ -193,8 +193,8 @@ https://github.com/gpii/universal/LICENSE.txt
                 }, {
                     listener: "gpii.tests.checkSavedModel",
                     args: ["{arguments}.0", {
-                        match: false,
-                        mismatch: false,
+                        "opinion.match": false,
+                        "opinion.mismatch": false,
                         notInteresting: false,
                         other: false,
                         otherFeedback: "",
@@ -216,8 +216,8 @@ https://github.com/gpii/universal/LICENSE.txt
                 }, {
                     listener: "gpii.tests.checkSavedModel",
                     args: ["{arguments}.0", {
-                        match: false,
-                        mismatch: true
+                        "opinion.match": false,
+                        "opinion.mismatch": true
                     }],
                     priority: "last",
                     event: "{feedback}.events.afterSave"
@@ -235,8 +235,8 @@ https://github.com/gpii/universal/LICENSE.txt
                 }, {
                     listener: "gpii.tests.checkSavedModel",
                     args: ["{arguments}.0", {
-                        match: false,
-                        mismatch: true,
+                        "opinion.match": false,
+                        "opinion.mismatch": true,
                         notInteresting: true,
                         other: true,
                         otherFeedback: "{that}.options.testOptions.newText",
@@ -257,8 +257,8 @@ https://github.com/gpii/universal/LICENSE.txt
                 }, {
                     listener: "gpii.tests.checkSavedModel",
                     args: ["{arguments}.0", {
-                        match: true,
-                        mismatch: false
+                        "opinion.match": true,
+                        "opinion.mismatch": false
                     }],
                     priority: "last",
                     event: "{feedback}.events.afterSave"
@@ -268,8 +268,8 @@ https://github.com/gpii/universal/LICENSE.txt
                 }, {
                     listener: "gpii.tests.checkSavedModel",
                     args: ["{arguments}.0", {
-                        match: false,
-                        mismatch: true
+                        "opinion.match": false,
+                        "opinion.mismatch": true
                     }],
                     priority: "last",
                     event: "{feedback}.events.afterSave"
@@ -279,8 +279,8 @@ https://github.com/gpii/universal/LICENSE.txt
                 }, {
                     listener: "gpii.tests.checkSavedModel",
                     args: ["{arguments}.0", {
-                        match: true,
-                        mismatch: false
+                        "opinion.match": true,
+                        "opinion.mismatch": false
                     }],
                     priority: "last",
                     event: "{feedback}.events.afterSave"
